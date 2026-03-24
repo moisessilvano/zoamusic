@@ -51,3 +51,14 @@ define('MUSICA_DESCRIPTION', env('MUSICA_DESCRIPTION', 'LOUVOR.NET - Música Cri
 function asaas_url(): string {
     return ASAAS_ENV === 'production' ? ASAAS_PROD_URL : ASAAS_SANDBOX_URL;
 }
+
+/**
+ * Registra logs do sistema em logs/app.log
+ */
+function logger(string $message, array $context = []): void {
+    $log_file = __DIR__ . '/logs/app.log';
+    $timestamp = date('Y-m-d H:i:s');
+    $context_str = !empty($context) ? ' ' . json_encode($context, JSON_UNESCAPED_UNICODE) : '';
+    $formatted = "[{$timestamp}] {$message}{$context_str}" . PHP_EOL;
+    file_put_contents($log_file, $formatted, FILE_APPEND);
+}

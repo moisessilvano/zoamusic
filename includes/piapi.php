@@ -39,9 +39,11 @@ function piapi_gerar_audio(string $titulo, string $letra): string {
     curl_close($ch);
 
     if ($curl_error) {
+        logger("PiAPI cURL error: {$curl_error}");
         throw new RuntimeException("PiAPI cURL error: {$curl_error}");
     }
     if ($http_code !== 200 && $http_code !== 201) {
+        logger("PiAPI API error {$http_code}: {$response}");
         throw new RuntimeException("PiAPI error {$http_code}: {$response}");
     }
 

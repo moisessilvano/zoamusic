@@ -64,9 +64,11 @@ EOT;
     curl_close($ch);
 
     if ($curl_error) {
+        logger("Claude cURL error: {$curl_error}");
         throw new RuntimeException("Claude cURL error: {$curl_error}");
     }
     if ($http_code !== 200) {
+        logger("Claude API error {$http_code}: {$response}");
         throw new RuntimeException("Claude API error {$http_code}: {$response}");
     }
 

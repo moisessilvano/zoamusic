@@ -5,7 +5,7 @@
 
 session_start();
 
-define('ADMIN_PASSWORD', 'louvor@2025');
+define('ADMIN_PASSWORD', 'Teste123@');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $senha = $_POST['senha'] ?? '';

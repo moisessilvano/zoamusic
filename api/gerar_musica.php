@@ -42,11 +42,15 @@ $stmt->execute([$uid, 'processando']);
 $musica = $stmt->fetch();
 
 if (!$musica || !empty($musica['task_id'])) {
+    logger("Worker ignorado para [{$uid}]: música não existe ou task_id já presente.");
     exit; // Não existe ou já foi iniciada
 }
 
 try {
+    logger("Worker iniciado para [{$uid}].");
+
     // ETAPA 1: Claude gera a letra
+    logger("Worker [{$uid}]: Solicitando letra ao Claude...");
     $resultado = claude_gerar_letra($musica['inspiracao']);
     $titulo = $resultado['titulo'];
     $letra  = $resultado['letra'];
@@ -54,16 +58,20 @@ try {
     // Salva letra no banco
     $stmt = db()->prepare('UPDATE musicas SET titulo = ?, letra = ? WHERE id = ?');
     $stmt->execute([$titulo, $letra, $uid]);
+    logger("Worker [{$uid}]: Letra gerada e salva: {$titulo}");
 
     // ETAPA 2: PiAPI (Suno) gera o áudio
+    logger("Worker [{$uid}]: Solicitando áudio ao PiAPI...");
     $task_id = piapi_gerar_audio($titulo, $letra);
 
     // Salva task_id no banco
     $stmt = db()->prepare('UPDATE musicas SET task_id = ? WHERE id = ?');
     $stmt->execute([$task_id, $uid]);
+    logger("Worker [{$uid}]: Task PiAPI criada: {$task_id}");
 
     // ETAPA 3: Polling do áudio (até 5 minutos)
     $max_attempts = 60; // 60 × 5s = 5 minutos
+    logger("Worker [{$uid}]: Iniciando polling do áudio...");
     for ($attempt = 0; $attempt < $max_attempts; $attempt++) {
         sleep(5);
 
@@ -74,18 +82,25 @@ try {
                 "UPDATE musicas SET audio_url = ?, status = 'concluido' WHERE id = ?"
             );
             $stmt->execute([$status['audio_url'], $uid]);
+            logger("Worker [{$uid}]: Áudio concluído com sucesso! URL: {$status['audio_url']}");
             break;
         }
 
         if ($status['status'] === 'erro') {
             $stmt = db()->prepare("UPDATE musicas SET status = 'erro' WHERE id = ?");
             $stmt->execute([$uid]);
+            logger("Worker [{$uid}]: PiAPI retornou erro na geração.");
             break;
+        }
+
+        if ($attempt === $max_attempts - 1) {
+            logger("Worker [{$uid}]: Timeout atingido após 5 minutos de espera.");
         }
     }
 
 } catch (RuntimeException $e) {
     // Loga o erro e marca como falha
+    logger("Worker [{$uid}] ERRO: " . $e->getMessage());
     error_log('LOUVOR.NET Worker Error [' . $uid . ']: ' . $e->getMessage());
     $stmt = db()->prepare("UPDATE musicas SET status = 'erro' WHERE id = ?");
     $stmt->execute([$uid]);

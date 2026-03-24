@@ -39,6 +39,8 @@ if ($musica['status'] === 'concluido') {
 $stmt = db()->prepare("UPDATE musicas SET status = 'processando' WHERE id = ?");
 $stmt->execute([$uid]);
 
+logger("Pagamento confirmado manualmente para música [{$uid}]. Iniciando geração.");
+
 // Redireciona imediatamente para a tela de processamento
 // A geração real acontece em background via processando.php
 header('Location: processando.php?uid=' . urlencode($uid));

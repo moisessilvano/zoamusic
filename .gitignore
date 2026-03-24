@@ -10,7 +10,6 @@ vendor/
 node_modules/
 
 # Uploads e assets gerados
-assets/musica.mp3
 assets/uploads/
 
 # Logs
