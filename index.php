@@ -271,8 +271,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 
 <!-- Áudio de fundo -->
-<audio id="bg-audio" loop preload="none">
+<audio id="bg-audio" loop preload="auto" playsinline>
     <source src="assets/musica.mp3" type="audio/mpeg">
+    Seu navegador não suporta o elemento de áudio.
 </audio>
 
 <!-- ════════════════════════════════════════
@@ -713,37 +714,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const lbl   = document.getElementById('audio-label');
     let playing = false;
 
-    const waveHTML = '<span id="sound-waves" class="flex items-end gap-0.5 h-3"><span></span><span></span><span></span></span>';
+    // Garante que o volume está baixo por padrão (conforto)
+    audio.volume = 0.35;
 
-    function setPlaying() {
-        playing = true;
-        icon.innerHTML = waveHTML;
-        lbl.textContent = 'Pausar som';
-        btn.classList.add('playing');
-    }
-    function setPaused() {
-        playing = false;
-        icon.textContent = '🔇';
-        lbl.textContent = 'Ativar som';
-        btn.classList.remove('playing');
-    }
-    function toggleAudio() {
-        if (!playing) {
-            audio.volume = 0.35;
-            audio.play().then(setPlaying).catch(() => { lbl.textContent = 'Clique novamente'; });
+    const waveHTML = `<span id="sound-waves" class="flex items-end gap-0.5 h-3">
+        <span class="w-[3px] h-full bg-[#C9A84C] rounded-full animate-[sw_0.8s_ease-in-out_infinite]"></span>
+        <span class="w-[3px] h-full bg-[#C9A84C] rounded-full animate-[sw_0.8s_ease-in-out_0.15s_infinite]"></span>
+        <span class="w-[3px] h-full bg-[#C9A84C] rounded-full animate-[sw_0.8s_ease-in-out_0.3s_infinite]"></span>
+    </span>`;
+
+    function updateUI() {
+        if (!audio.paused) {
+            playing = true;
+            icon.innerHTML = waveHTML;
+            lbl.textContent = 'Pausar som';
+            btn.classList.add('playing');
         } else {
-            audio.pause();
-            setPaused();
+            playing = false;
+            icon.textContent = '🔇';
+            lbl.textContent = 'Ativar som';
+            btn.classList.remove('playing');
         }
     }
 
-    audio.volume = 0.35;
-    audio.play().then(setPlaying).catch(() => {
-        const unlock = () => {
-            audio.play().then(() => { setPlaying(); document.removeEventListener('click', unlock); }).catch(() => {});
-        };
-        document.addEventListener('click', unlock);
-    });
+    async function toggleAudio() {
+        try {
+            if (audio.paused) {
+                // Safari e Chrome Mobile exigem que play() seja chamado diretamente em um evento de clique
+                await audio.play();
+            } else {
+                audio.pause();
+            }
+            updateUI();
+        } catch (err) {
+            console.error("Erro ao reproduzir áudio:", err);
+            lbl.textContent = 'Erro ao tocar';
+        }
+    }
+
+    // Tenta tocar automaticamente (quase sempre falha em navegadores modernos sem clique)
+    const autoPlay = async () => {
+        try {
+            await audio.play();
+            updateUI();
+            // Se funcionou, removemos os ouvintes de clique "desbloqueadores"
+            document.removeEventListener('click', autoPlay);
+            document.removeEventListener('touchstart', autoPlay);
+        } catch (err) {
+            // Falhou (esperado). Aguardando o primeiro clique do usuário no site para liberar.
+            console.log("Autoplay bloqueado pelo navegador. Aguardando interação...");
+        }
+    };
+
+    // Tenta rodar assim que carregar
+    window.addEventListener('load', autoPlay);
+
+    // Se o autoplay falhar, qualquer clique/toque no site tenta iniciar o áudio (padrão de "unlock")
+    document.addEventListener('click', autoPlay, { once: true });
+    document.addEventListener('touchstart', autoPlay, { once: true });
+
+    // Escuta mudanças de estado do próprio elemento áudio
+    audio.onplay = updateUI;
+    audio.onpause = updateUI;
 </script>
 </body>
 </html>
