@@ -25,20 +25,38 @@ if (!$musica || $musica['status'] !== 'concluido') {
 
 function formatar_letra(string $letra): string {
     $html = '';
-    foreach (preg_split('/\n{2,}/', trim($letra)) as $paragrafo) {
-        $paragrafo = trim($paragrafo);
-        if (!$paragrafo) continue;
-        if (preg_match('/^(Estrofe|Refrão|Bridge|Verso|Pré-Refrão|Coda)/iu', $paragrafo)) {
-            $parts   = explode("\n", $paragrafo, 2);
-            $secao   = htmlspecialchars(trim($parts[0]));
-            $conteudo = isset($parts[1]) ? nl2br(htmlspecialchars(trim($parts[1]))) : '';
+    // Divide por parágrafos
+    $blocos = preg_split('/\n{2,}/', trim($letra));
+    
+    foreach ($blocos as $bloco) {
+        $bloco = trim($bloco);
+        if (!$bloco) continue;
+
+        // Verifica se começa com uma tag tipo [Verse], [Chorus] etc
+        if (preg_match('/^\[(.*?)\]/i', $bloco, $matches)) {
+            $secao = $matches[1];
+            // Remove a tag do conteúdo
+            $conteudo = trim(preg_replace('/^\[.*?\]/i', '', $bloco));
+            
+            // Tradução simples para o usuário final
+            $map = [
+                'Verse' => 'Estrofe',
+                'Chorus' => 'Refrão',
+                'Bridge' => 'Ponte',
+                'Intro' => 'Introdução',
+                'Outro' => 'Finalização'
+            ];
+            $secao_exibicao = $map[ucfirst(strtolower($secao))] ?? $secao;
+
             $html .= '<div class="mb-8">';
-            $html .= '<p class="text-xs font-bold tracking-widest uppercase mb-3" style="color:#C9A84C">' . $secao . '</p>';
-            $html .= '<p class="leading-relaxed text-lg font-display italic" style="color:#44403C">' . $conteudo . '</p>';
+            $html .= '<p class="text-xs font-bold tracking-widest uppercase mb-3" style="color:#C9A84C">' . htmlspecialchars($secao_exibicao) . '</p>';
+            if ($conteudo) {
+                $html .= '<p class="leading-relaxed text-lg font-display italic" style="color:#44403C">' . nl2br(htmlspecialchars($conteudo)) . '</p>';
+            }
             $html .= '</div>';
         } else {
             $html .= '<p class="leading-relaxed text-lg font-display italic mb-6" style="color:#44403C">'
-                   . nl2br(htmlspecialchars($paragrafo)) . '</p>';
+                   . nl2br(htmlspecialchars($bloco)) . '</p>';
         }
     }
     return $html;
@@ -160,8 +178,11 @@ $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
 
     <!-- AÇÕES -->
     <div class="grid grid-cols-2 gap-4 mb-8">
+        <?php 
+            $filename = preg_replace('/[^a-z0-9]+/', '-', strtolower($musica['titulo'] ?? 'musica')) . '-louvor-net.mp3';
+        ?>
         <a href="<?= htmlspecialchars($musica['audio_url']) ?>"
-           download="<?= htmlspecialchars($musica['titulo'] ?? 'louvor') ?>.mp3"
+           download="<?= $filename ?>"
            class="flex items-center justify-center gap-2 py-4 rounded-2xl font-semibold text-sm transition-all"
            style="background:#fff; border:1.5px solid #E8D9A8; color:#44403C;">
             ⬇ Baixar MP3

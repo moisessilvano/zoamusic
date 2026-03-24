@@ -23,6 +23,10 @@ if ($musica['status'] === 'concluido') {
     header('Location: ouvir.php?uid=' . urlencode($uid)); exit;
 }
 
+if ($musica['status'] === 'processando') {
+    header('Location: processando.php?uid=' . urlencode($uid)); exit;
+}
+
 $pix_gerado = !empty($musica['asaas_id']);
 $pix_error  = '';
 

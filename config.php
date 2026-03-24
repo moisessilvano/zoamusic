@@ -35,7 +35,7 @@ define('ANTHROPIC_MODEL',   env('ANTHROPIC_MODEL', 'claude-sonnet-4-6'));
 
 // --- PiAPI ---
 define('PIAPI_KEY',      env('PIAPI_KEY'));
-define('PIAPI_BASE_URL', env('PIAPI_BASE_URL', 'https://api.piapi.ai/api/suno/v1'));
+define('PIAPI_BASE_URL', env('PIAPI_BASE_URL', 'https://api.piapi.ai/api/v1'));
 
 // --- Asaas ---
 define('ASAAS_API_KEY',    env('ASAAS_API_KEY'));

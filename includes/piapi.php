@@ -1,34 +1,54 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Integração PiAPI (Suno) para geração de áudio
+// LOUVOR.NET - Integração PiAPI (Udio) para geração de áudio
 // ============================================================
 
 require_once __DIR__ . '/../config.php';
 
 /**
- * Dispara a geração de áudio no Suno via PiAPI.
+ * Dispara a geração de áudio no Udio via PiAPI Task.
  *
- * @param string $titulo  Título da música
- * @param string $letra   Letra completa gerada pelo Claude
- * @return string         task_id retornado pela PiAPI
+ * @param string $titulo      Título da música
+ * @param string $letra       Letra completa gerada pelo Claude (com tags [Verse], etc)
+ * @param string $vocal_type  Recomendação de voz (male vocalist / female vocalist)
+ * @return string             task_id retornado pela PiAPI
  * @throws RuntimeException
  */
-function piapi_gerar_audio(string $titulo, string $letra): string {
+function piapi_gerar_audio(string $titulo, string $letra, string $vocal_type = 'male vocalist'): string {
+    // Tags ultra-específicas para Udio/Udio v1.5 para garantir voz principal clara e gospel brasileiro
+    // 'clear lead solo vocals' e 'front and center' são essenciais para evitar vozes de fundo
+    $style = "brazilian portuguese, christian worship, contemporary gospel, {$vocal_type}, lead singer, clear lead solo vocals, front and center voice, acoustic piano, emotional, highly produced, professional studio quality";
+    
     $payload = [
-        'title'           => $titulo,
-        'lyrics'          => $letra,
-        'style'           => 'christian worship, contemporary gospel, piano, emotional',
-        'make_instrumental' => false,
+        'model'     => 'music-u', 
+        'task_type' => 'generate_music',
+        'input'     => [
+            'title' => $titulo,
+            // Enviamos a letra crua com as tags [Verse], [Chorus] etc que o Udio entende nativamente
+            'lyrics' => $letra, 
+            'gpt_description_prompt' => $style,
+            'lyrics_type' => 'user', // Indica que estamos fornecendo a letra exata
+            'seed' => -1
+        ],
+        'config' => [
+            'service_mode' => 'public'
+        ]
     ];
 
-    $ch = curl_init(PIAPI_BASE_URL . '/music');
+    $url = PIAPI_BASE_URL . '/task';
+    logger("Chamando PiAPI: $url");
+    
+    $masked_key = substr(PIAPI_KEY, 0, 4) . '...' . substr(PIAPI_KEY, -4);
+    logger("Usando Chave PiAPI: $masked_key");
+
+    $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => json_encode($payload),
         CURLOPT_HTTPHEADER     => [
             'Content-Type: application/json',
-            'X-API-Key: ' . PIAPI_KEY,
+            'x-api-key: ' . PIAPI_KEY,
         ],
         CURLOPT_TIMEOUT        => 30,
     ]);
@@ -42,18 +62,19 @@ function piapi_gerar_audio(string $titulo, string $letra): string {
         logger("PiAPI cURL error: {$curl_error}");
         throw new RuntimeException("PiAPI cURL error: {$curl_error}");
     }
-    if ($http_code !== 200 && $http_code !== 201) {
-        logger("PiAPI API error {$http_code}: {$response}");
-        throw new RuntimeException("PiAPI error {$http_code}: {$response}");
-    }
-
+    
     $data = json_decode($response, true);
 
-    // A PiAPI retorna task_id ou id dependendo da versão
-    $task_id = $data['task_id'] ?? $data['id'] ?? null;
+    if ($http_code >= 400 || ($data['code'] ?? 0) !== 200) {
+        $msg = $data['message'] ?? $response;
+        logger("PiAPI API error {$http_code}: {$msg}");
+        throw new RuntimeException("PiAPI error {$http_code}: {$msg}");
+    }
+
+    $task_id = $data['data']['task_id'] ?? null;
 
     if (!$task_id) {
-        throw new RuntimeException("PiAPI não retornou task_id: {$response}");
+        throw new RuntimeException("PiAPI não retornou task_id: " . json_encode($data));
     }
 
     return (string) $task_id;
@@ -66,11 +87,11 @@ function piapi_gerar_audio(string $titulo, string $letra): string {
  * @return array{status: string, audio_url: string|null}
  */
 function piapi_verificar_status(string $task_id): array {
-    $ch = curl_init(PIAPI_BASE_URL . '/music/' . urlencode($task_id));
+    $ch = curl_init(PIAPI_BASE_URL . '/task/' . urlencode($task_id));
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPHEADER     => [
-            'X-API-Key: ' . PIAPI_KEY,
+            'x-api-key: ' . PIAPI_KEY,
         ],
         CURLOPT_TIMEOUT        => 15,
     ]);
@@ -80,26 +101,44 @@ function piapi_verificar_status(string $task_id): array {
     curl_close($ch);
 
     if ($http_code !== 200) {
-        return ['status' => 'erro', 'audio_url' => null];
+        return ['status' => 'processando', 'audio_url' => null];
     }
 
     $data = json_decode($response, true);
+    $task_data = $data['data'] ?? [];
+    
+    $raw_status = strtolower($task_data['status'] ?? 'pending');
+    
+    // Procura por qualquer música gerada com sucesso no output
+    $songs = $task_data['output']['songs'] ?? [];
+    $audio_url = null;
+    
+    foreach ($songs as $song) {
+        if (!empty($song['song_path'])) {
+            $audio_url = $song['song_path'];
+            break;
+        }
+        if (!empty($song['audio_url'])) {
+            $audio_url = $song['audio_url'];
+            break;
+        }
+    }
 
-    // Mapear status da PiAPI para status interno
-    $raw_status = strtolower($data['status'] ?? 'pending');
-
-    if (in_array($raw_status, ['completed', 'succeeded', 'success'])) {
-        // O áudio pode estar em data.output, clips[0].audio_url, etc.
-        $audio_url = $data['output']['audio_url']
-            ?? $data['clips'][0]['audio_url']
-            ?? $data['audio_url']
-            ?? null;
-
+    if ($audio_url) {
         return ['status' => 'concluido', 'audio_url' => $audio_url];
     }
 
-    if (in_array($raw_status, ['failed', 'error'])) {
-        return ['status' => 'erro', 'audio_url' => null];
+    if (in_array($raw_status, ['completed', 'succeeded', 'success'])) {
+        $audio_url = $task_data['output']['audio_url'] ?? null;
+        if ($audio_url) {
+            return ['status' => 'concluido', 'audio_url' => $audio_url];
+        }
+    }
+
+    if (in_array($raw_status, ['failed', 'error', 'timeout'])) {
+        if (empty($songs)) {
+            return ['status' => 'erro', 'audio_url' => null];
+        }
     }
 
     return ['status' => 'processando', 'audio_url' => null];

@@ -29,13 +29,18 @@ if (!$musica) {
     die('Música não encontrada.');
 }
 
-// Já concluído? Redireciona direto
+// Já concluído ou já em processamento?
 if ($musica['status'] === 'concluido') {
     header('Location: ouvir.php?uid=' . urlencode($uid));
     exit;
 }
 
-// Marca como processando
+if ($musica['status'] === 'processando') {
+    header('Location: processando.php?uid=' . urlencode($uid));
+    exit;
+}
+
+// Marca como processando apenas se estiver aguardando
 $stmt = db()->prepare("UPDATE musicas SET status = 'processando' WHERE id = ?");
 $stmt->execute([$uid]);
 

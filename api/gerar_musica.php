@@ -54,15 +54,16 @@ try {
     $resultado = claude_gerar_letra($musica['inspiracao']);
     $titulo = $resultado['titulo'];
     $letra  = $resultado['letra'];
+    $vocal  = $resultado['vocal'] ?? 'male vocalist';
 
     // Salva letra no banco
     $stmt = db()->prepare('UPDATE musicas SET titulo = ?, letra = ? WHERE id = ?');
     $stmt->execute([$titulo, $letra, $uid]);
-    logger("Worker [{$uid}]: Letra gerada e salva: {$titulo}");
+    logger("Worker [{$uid}]: Letra gerada e salva: {$titulo} (Voz: {$vocal})");
 
-    // ETAPA 2: PiAPI (Suno) gera o áudio
+    // ETAPA 2: PiAPI (Udio) gera o áudio
     logger("Worker [{$uid}]: Solicitando áudio ao PiAPI...");
-    $task_id = piapi_gerar_audio($titulo, $letra);
+    $task_id = piapi_gerar_audio($titulo, $letra, $vocal);
 
     // Salva task_id no banco
     $stmt = db()->prepare('UPDATE musicas SET task_id = ? WHERE id = ?');
