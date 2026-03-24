@@ -1,0 +1,30 @@
+# ============================================================
+# LOUVOR.NET — .gitignore
+# ============================================================
+
+# Credenciais — NUNCA commitar
+.env
+
+# Dependências
+vendor/
+node_modules/
+
+# Uploads e assets gerados
+assets/musica.mp3
+assets/uploads/
+
+# Logs
+*.log
+logs/
+
+# Cache e temporários
+*.cache
+*.tmp
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
