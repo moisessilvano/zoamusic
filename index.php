@@ -271,7 +271,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 
 <!-- Áudio de fundo -->
-<audio id="bg-audio" loop preload="auto" playsinline>
+<audio id="bg-audio" loop preload="auto" playsinline muted>
     <source src="assets/musica.mp3" type="audio/mpeg">
     Seu navegador não suporta o elemento de áudio.
 </audio>
@@ -317,6 +317,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </a>
     </div>
 </nav>
+
+
+<!-- ════════════════════════════════════════
+     MODAL DE BOAS-VINDAS (MOBILE ONLY)
+════════════════════════════════════════ -->
+<div id="welcome-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-6 bg-[#FDFBF5]">
+    <div class="max-w-sm w-full text-center">
+        <!-- Ornamento Superior -->
+        <div class="flex justify-center mb-8">
+            <div class="relative">
+                <div class="hero-ornament absolute inset-0 -m-8 opacity-40"></div>
+                <svg class="w-20 h-20 relative z-10" viewBox="0 0 40 40" fill="none">
+                    <circle cx="20" cy="20" r="19" stroke="#C9A84C" stroke-width="1" fill="rgba(201,168,76,0.05)"/>
+                    <path d="M20 9 L22.5 16.5 L30.5 16.5 L24 21.5 L26.5 29 L20 24 L13.5 29 L16 21.5 L9.5 16.5 L17.5 16.5 Z" fill="#C9A84C"/>
+                </svg>
+            </div>
+        </div>
+
+        <h2 class="font-display text-4xl font-bold mb-4" style="color:#1C1917;">
+            Bem-vindo ao<br><span class="gold-text">LOUVOR.NET</span>
+        </h2>
+
+        <p class="text-base leading-relaxed mb-8" style="color:#5C4A2A;">
+            Estamos prontos para transformar sua história em um cântico de adoração único.
+        </p>
+
+        <div class="rounded-2xl p-5 mb-10 italic text-sm" style="background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.15); color:#8B6914;">
+            "Cantai ao Senhor um cântico novo, cantai ao Senhor todas as terras."<br>
+            <span class="font-bold mt-2 block not-italic">— Salmos 96:1</span>
+        </div>
+
+        <button onclick="closeWelcomeModal()"
+                class="btn-gold w-full py-5 rounded-2xl text-white font-bold text-xl tracking-wide shadow-xl">
+            ✨ Entrar e Ouvir
+        </button>
+
+        <p class="text-xs mt-6" style="color:#B8A07A;">Toque para iniciar sua experiência</p>
+    </div>
+</div>
 
 
 <!-- ════════════════════════════════════════
@@ -714,21 +753,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const lbl   = document.getElementById('audio-label');
     let playing = false;
 
-    // Garante que o volume está baixo por padrão (conforto)
+    // Volume confortável
     audio.volume = 0.35;
 
     const waveHTML = `<span id="sound-waves" class="flex items-end gap-0.5 h-3">
-        <span class="w-[3px] h-full bg-[#C9A84C] rounded-full animate-[sw_0.8s_ease-in-out_infinite]"></span>
-        <span class="w-[3px] h-full bg-[#C9A84C] rounded-full animate-[sw_0.8s_ease-in-out_0.15s_infinite]"></span>
-        <span class="w-[3px] h-full bg-[#C9A84C] rounded-full animate-[sw_0.8s_ease-in-out_0.3s_infinite]"></span>
+        <style>
+            @keyframes sw { 0%,100%{transform:scaleY(.4)} 50%{transform:scaleY(1)} }
+        </style>
+        <span class="w-[3px] h-full bg-[#C9A84C] rounded-full" style="animation:sw 0.8s ease-in-out infinite; transform-origin:bottom;"></span>
+        <span class="w-[3px] h-full bg-[#C9A84C] rounded-full" style="animation:sw 0.8s ease-in-out 0.15s infinite; transform-origin:bottom;"></span>
+        <span class="w-[3px] h-full bg-[#C9A84C] rounded-full" style="animation:sw 0.8s ease-in-out 0.3s infinite; transform-origin:bottom;"></span>
     </span>`;
 
     function updateUI() {
-        if (!audio.paused) {
+        if (!audio.paused && !audio.muted) {
             playing = true;
             icon.innerHTML = waveHTML;
             lbl.textContent = 'Pausar som';
             btn.classList.add('playing');
+        } else if (!audio.paused && audio.muted) {
+            playing = true;
+            icon.textContent = '🔈';
+            lbl.textContent = 'Ativar som';
+            btn.classList.remove('playing');
         } else {
             playing = false;
             icon.textContent = '🔇';
@@ -740,42 +787,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     async function toggleAudio() {
         try {
             if (audio.paused) {
-                // Safari e Chrome Mobile exigem que play() seja chamado diretamente em um evento de clique
+                audio.muted = false;
                 await audio.play();
+            } else if (!audio.paused && audio.muted) {
+                audio.muted = false;
             } else {
                 audio.pause();
             }
             updateUI();
         } catch (err) {
-            console.error("Erro ao reproduzir áudio:", err);
-            lbl.textContent = 'Erro ao tocar';
+            console.error("Erro ao alternar áudio:", err);
         }
     }
 
-    // Tenta tocar automaticamente (quase sempre falha em navegadores modernos sem clique)
-    const autoPlay = async () => {
+    // ── Boas-vindas Mobile ──
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const modal = document.getElementById('welcome-modal');
+
+    function closeWelcomeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        // Ao clicar no botão da modal, garantimos a interação para tocar som
+        unmuteAll();
+    }
+
+    // Estratégia de Autoplay para Android/iOS
+    const startAudio = async () => {
         try {
+            // Se for mobile, mostra a modal para forçar interação
+            if (isMobile) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            // Tenta tocar mudo inicialmente
+            audio.muted = true;
             await audio.play();
             updateUI();
-            // Se funcionou, removemos os ouvintes de clique "desbloqueadores"
-            document.removeEventListener('click', autoPlay);
-            document.removeEventListener('touchstart', autoPlay);
         } catch (err) {
-            // Falhou (esperado). Aguardando o primeiro clique do usuário no site para liberar.
-            console.log("Autoplay bloqueado pelo navegador. Aguardando interação...");
+            console.log("Autoplay mudo bloqueado. Aguardando interação...");
         }
     };
 
-    // Tenta rodar assim que carregar
-    window.addEventListener('load', autoPlay);
+    const unmuteAll = async () => {
+        try {
+            // 2. No primeiro clique, remove o mudo
+            if (audio.muted || audio.paused) {
+                audio.muted = false;
+                await audio.play();
+                updateUI();
+            }
+            // Remove os ouvintes para não rodar em cada clique
+            document.removeEventListener('click', unmuteAll);
+            document.removeEventListener('touchstart', unmuteAll);
+        } catch (err) {
+            console.error("Erro ao desativar mudo:", err);
+        }
+    };
 
-    // Se o autoplay falhar, qualquer clique/toque no site tenta iniciar o áudio (padrão de "unlock")
-    document.addEventListener('click', autoPlay, { once: true });
-    document.addEventListener('touchstart', autoPlay, { once: true });
+    // Inicia mudo ao carregar
+    window.addEventListener('load', startAudio);
 
-    // Escuta mudanças de estado do próprio elemento áudio
+    // Desativa mudo na primeira interação
+    document.addEventListener('click', unmuteAll);
+    document.addEventListener('touchstart', unmuteAll);
+
+    // Sincroniza UI com eventos do elemento
     audio.onplay = updateUI;
     audio.onpause = updateUI;
+    audio.onvolumechange = updateUI;
 </script>
 </body>
 </html>
