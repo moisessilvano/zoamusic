@@ -22,14 +22,20 @@ REGRAS DE ESTRUTURA (OBRIGATÓRIO):
 - Use EXCLUSIVAMENTE estas tags para as seções: [Intro], [Verse], [Chorus], [Bridge], [Outro].
 - Não use "Estrofe 1", "Refrão", etc. Use apenas as tags acima em colchetes.
 - O IDIOMA deve ser exclusivamente Português do Brasil (PT-BR).
-- ESTILO: Louvor e Adoração Contemporâneo (Worship Brasileiro).
+- ESTILO (OBRIGATÓRIO): Gospel / louvor evangélico BRASILEIRO — melodia vocal cantável (frases claras, como canções de igreja no Brasil), tom emotivo mas congregacional; evite cadência ou léxico que soe “worship americano traduzido”.
 - DECISÃO DE VOZ: Com base na letra, decida se a música soaria melhor com "male vocalist" ou "female vocalist".
+- [Outro] deve conter UMA FRASE FINAL CANTADA (letra), que encerre com cadência. Não coloque apenas instruções tipo "(Fim suave)" ou "(encerramento)".
+- No `[Outro]`, NÃO inclua parênteses nem instruções de produção; apenas a letra cantada.
+- A letra deve ser escrita como se fosse para um solista principal (sem indicar coros/grupos na letra).
 
 FORMATO DE RESPOSTA (JSON obrigatório):
+Responda SOMENTE com JSON válido (sem blocos ``` e sem texto fora do JSON).
+No campo "letra", use `\\n` para representar as quebras de linha (isto é: caracteres “\” + “n” dentro da string).
+NÃO insira quebras de linha reais dentro da string entre aspas.
 {
   "titulo": "Título da Música",
   "vocal": "male vocalist" ou "female vocalist",
-  "letra": "[Intro]\n(Instrumental piano)\n\n[Verse]\n[verso 1]\n\n[Chorus]\n[refrão]\n\n[Verse]\n[verso 2]\n\n[Chorus]\n[refrão]\n\n[Bridge]\n[ponte]\n\n[Chorus]\n[refrão final]\n\n[Outro]\n(Fim suave)"
+  "letra": "[Intro]\n(Instrumental piano)\n\n[Verse]\n[verso 1]\n\n[Chorus]\n[refrão]\n\n[Verse]\n[verso 2]\n\n[Chorus]\n[refrão]\n\n[Bridge]\n[ponte]\n\n[Chorus]\n[refrão final]\n\n[Outro]\nAmém, amém...\n"
 }
 EOT;
 
@@ -77,7 +83,26 @@ EOT;
 
     // Extrai o JSON da resposta (pode vir com texto extra)
     if (preg_match('/\{.*\}/s', $content, $matches)) {
-        $parsed = json_decode($matches[0], true);
+        $json = trim($matches[0]);
+        $parsed = json_decode($json, true);
+
+        // Fallback: às vezes o Claude coloca quebras de linha reais dentro da string "letra",
+        // o que torna o JSON inválido. Tentamos converter isso para \n dentro da string.
+        if (!$parsed) {
+            $fixed = preg_replace_callback(
+                '/("letra"\s*:\s*")(.+?)(")(\s*,|\s*})/s',
+                function ($m) {
+                    $val = $m[2];
+                    $val = str_replace(["\r\n", "\r", "\n"], "\\n", $val);
+                    return $m[1] . $val . $m[3] . $m[4];
+                },
+                $json,
+                1
+            );
+            if (is_string($fixed) && $fixed !== $json) {
+                $parsed = json_decode($fixed, true);
+            }
+        }
         if ($parsed && isset($parsed['titulo'], $parsed['letra'], $parsed['vocal'])) {
             return $parsed;
         }

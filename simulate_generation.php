@@ -10,7 +10,7 @@ require_once __DIR__ . '/includes/piapi.php';
 
 echo "--- Iniciando Simulação de Geração LOUVOR.NET ---\n";
 
-$inspiracao = "Gostaria de um louvor sobre gratidão pela vida, com foco na paz de Deus que excede todo o entendimento.";
+$inspiracao = "Gostaria de um musica sobre gratidão pela vida, sobre dificuldades financeiras e na familia";
 $uid = uuid4();
 
 echo "[1/4] Inserindo registro no banco de dados (ID: $uid)...\n";
@@ -23,8 +23,10 @@ try {
     $resultado = claude_gerar_letra($inspiracao);
     $titulo = $resultado['titulo'];
     $letra  = $resultado['letra'];
+    $vocal   = $resultado['vocal'] ?? 'male vocalist';
     
     echo "  - Título: $titulo\n";
+    echo "  - Vocal: {$vocal}\n";
     echo "  - Letra gerada com sucesso.\n";
 
     $stmt = db()->prepare('UPDATE musicas SET titulo = ?, letra = ? WHERE id = ?');
@@ -32,7 +34,7 @@ try {
 
     // ETAPA 2: Áudio com PiAPI
     echo "[3/4] Solicitando áudio ao PiAPI (Udio)...\n";
-    $task_id = piapi_gerar_audio($titulo, $letra);
+    $task_id = piapi_gerar_audio($titulo, $letra, $vocal);
     echo "  - Task ID: $task_id\n";
 
     $stmt = db()->prepare('UPDATE musicas SET task_id = ? WHERE id = ?');
@@ -41,6 +43,7 @@ try {
     // ETAPA 3: Polling
     echo "[4/4] Iniciando polling (esperando áudio ficar pronto)...\n";
     $max_attempts = 120; // 10 minutos
+    $done = false;
     for ($attempt = 1; $attempt <= $max_attempts; $attempt++) {
         sleep(5);
         $status = piapi_verificar_status($task_id);
@@ -52,6 +55,7 @@ try {
             $stmt->execute([$status['audio_url'], $uid]);
             echo "\n✨ MÚSICA GERADA COM SUCESSO!\n";
             echo "URL do Áudio: " . $status['audio_url'] . "\n";
+            $done = true;
             break;
         }
 
@@ -65,6 +69,11 @@ try {
         if ($attempt === $max_attempts) {
             echo "\n⌛ TIMEOUT ATINGIDO.\n";
         }
+    }
+
+    if (!$done) {
+        $stmt = db()->prepare("UPDATE musicas SET status = 'erro' WHERE id = ?");
+        $stmt->execute([$uid]);
     }
 
 } catch (Exception $e) {

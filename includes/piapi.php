@@ -14,10 +14,29 @@ require_once __DIR__ . '/../config.php';
  * @return string             task_id retornado pela PiAPI
  * @throws RuntimeException
  */
+function piapi_build_style_prompt(string $vocal_type): string {
+    $vt = strtolower(trim($vocal_type));
+    $natural = str_contains($vt, 'female')
+        ? 'warm female Brazilian gospel lead singer, natural relaxed phrasing, spoken-to-sung transitions, human and intimate, not robotic, light natural vibrato'
+        : 'warm male Brazilian gospel lead singer, natural relaxed phrasing, spoken-to-sung transitions, human and intimate, not robotic, light natural vibrato';
+
+    // Estilo coerente: muitos "no X / extremely Y / highly produced" no mesmo prompt costumam deixar voz sintética ou forçada.
+    // IMPORTANTE: idioma vem primeiro para ter o maior peso na interpretação do modelo.
+    $parts = [
+        'IDIOMA EXCLUSIVO: português do Brasil (PT-BR), toda a música cantada em português brasileiro, zero palavras em inglês na voz, nenhuma sílaba inventada',
+        'louvor gospel evangélico brasileiro contemporâneo, música cristã nacional, louvor e adoração',
+        $natural,
+        'voz principal solo na frente da mixagem; coral suave apenas nos refrões, bem atrás da voz principal',
+        'arranjo: piano acústico, violão, baixo elétrico suave, bateria estilo igreja brasileira',
+        'produção: clima de culto ao vivo, dinâmica orgânica, sem compressão excessiva, sem autotune pesado',
+        'final: cadência melódica, sustentar última frase brevemente, fade suave e natural',
+    ];
+
+    return implode(', ', $parts);
+}
+
 function piapi_gerar_audio(string $titulo, string $letra, string $vocal_type = 'male vocalist'): string {
-    // Tags ultra-específicas para Udio/Udio v1.5 para garantir voz principal clara e gospel brasileiro
-    // 'clear lead solo vocals' e 'front and center' são essenciais para evitar vozes de fundo
-    $style = "brazilian portuguese, christian worship, contemporary gospel, {$vocal_type}, lead singer, clear lead solo vocals, front and center voice, acoustic piano, emotional, highly produced, professional studio quality";
+    $style = piapi_build_style_prompt($vocal_type);
     
     $payload = [
         'model'     => 'music-u', 
@@ -109,22 +128,45 @@ function piapi_verificar_status(string $task_id): array {
     
     $raw_status = strtolower($task_data['status'] ?? 'pending');
     
+    // Se a task falhou/expirou, não aceitamos "parciais" para evitar áudio corrompido ou idioma inválido.
+    if (in_array($raw_status, ['failed', 'error', 'timeout'])) {
+        return ['status' => 'erro', 'audio_url' => null];
+    }
+
     // Procura por qualquer música gerada com sucesso no output
     $songs = $task_data['output']['songs'] ?? [];
-    $audio_url = null;
-    
-    foreach ($songs as $song) {
-        if (!empty($song['song_path'])) {
-            $audio_url = $song['song_path'];
-            break;
-        }
-        if (!empty($song['audio_url'])) {
-            $audio_url = $song['audio_url'];
-            break;
+    $selected_url = null;
+    $best_score = -PHP_INT_MAX;
+    $selected_debug = null;
+
+    foreach ($songs as $i => $song) {
+        $url = !empty($song['song_path']) ? $song['song_path'] : (!empty($song['audio_url']) ? $song['audio_url'] : null);
+        if (!$url) continue;
+
+        $title = (string)($song['title'] ?? $song['name'] ?? $song['song_title'] ?? '');
+        $title_l = mb_strtolower($title);
+
+        // Heurística: evitar versões puramente instrumentais e preferir as que pareçam ter voz/lead.
+        $score = 0;
+        if (!empty($song['song_path'])) $score += 2;
+        if (preg_match('/vocal|lead|lyrics|full/i', $title)) $score += 5;
+        if (preg_match('/\binstrumental\b|\binstr\b|\binst\b|acapella|no vocals|without vocals|sidetracks|instrumental version/i', $title_l)) $score -= 6;
+        if (preg_match('/(choir|group|background|backing)/i', $title)) $score -= 2; // evita "só backing/ambiente"
+
+        if ($score > $best_score) {
+            $best_score = $score;
+            $selected_url = $url;
+            $selected_debug = ['index' => $i, 'title' => $title, 'score' => $score];
         }
     }
 
+    // Fallback se não achou nada em songs
+    $audio_url = $selected_url;
+
     if ($audio_url) {
+        if ($selected_debug) {
+            logger("PiAPI selecionou output: " . json_encode($selected_debug, JSON_UNESCAPED_UNICODE));
+        }
         return ['status' => 'concluido', 'audio_url' => $audio_url];
     }
 
@@ -132,12 +174,6 @@ function piapi_verificar_status(string $task_id): array {
         $audio_url = $task_data['output']['audio_url'] ?? null;
         if ($audio_url) {
             return ['status' => 'concluido', 'audio_url' => $audio_url];
-        }
-    }
-
-    if (in_array($raw_status, ['failed', 'error', 'timeout'])) {
-        if (empty($songs)) {
-            return ['status' => 'erro', 'audio_url' => null];
         }
     }
 
