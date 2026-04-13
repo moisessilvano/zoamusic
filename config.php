@@ -59,10 +59,18 @@ function asaas_url(): string {
 /**
  * Registra logs do sistema em logs/app.log
  */
-function logger(string $message, array $context = []): void {
-    $log_file = __DIR__ . '/logs/app.log';
-    $timestamp = date('Y-m-d H:i:s');
-    $context_str = !empty($context) ? ' ' . json_encode($context, JSON_UNESCAPED_UNICODE) : '';
-    $formatted = "[{$timestamp}] {$message}{$context_str}" . PHP_EOL;
-    file_put_contents($log_file, $formatted, FILE_APPEND);
+function logger(string $message, ?string $uid = null): void {
+    $dir = __DIR__ . '/logs';
+    if (!is_dir($dir)) mkdir($dir, 0777, true);
+    
+    $time = date('Y-m-d H:i:s');
+    $log_msg = "[{$time}] {$message}" . PHP_EOL;
+
+    // Log geral (sempre mantém)
+    file_put_contents($dir . '/app.log', $log_msg, FILE_APPEND);
+    
+    // Log específico por música
+    if ($uid && preg_match('/^[0-9a-f-]{36}$/i', $uid)) {
+        file_put_contents($dir . "/{$uid}.log", $log_msg, FILE_APPEND);
+    }
 }

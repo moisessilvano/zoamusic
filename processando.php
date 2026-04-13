@@ -23,10 +23,23 @@ if ($musica['status'] === 'concluido') {
 }
 
 if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($musica['letra'])) {
-    $worker_url = BASE_URL . 'api/gerar_musica?uid=' . urlencode($uid) . '&secret=' . urlencode(hash_hmac('sha256', $uid, ASAAS_API_KEY));
+    $worker_url = BASE_URL . 'api/gerar_musica.php?uid=' . urlencode($uid) . '&secret=' . urlencode(hash_hmac('sha256', $uid, ASAAS_API_KEY));
+    
     $ch = curl_init($worker_url);
-    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>false, CURLOPT_TIMEOUT_MS=>500, CURLOPT_NOSIGNAL=>true]);
-    curl_exec($ch);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => false, 
+        CURLOPT_TIMEOUT_MS => 2000, // Aumentado para 2s para evitar deadlock local
+        CURLOPT_NOSIGNAL => true,
+        CURLOPT_SSL_VERIFYPEER => false, // Ignora erro de SSL em chamada local
+        CURLOPT_SSL_VERIFYHOST => false
+    ]);
+    
+    $success = curl_exec($ch);
+    if (!$success) {
+        logger("Erro ao disparar worker para [{$uid}]: " . curl_error($ch));
+    } else {
+        logger("Worker disparado com sucesso para [{$uid}].");
+    }
     curl_close($ch);
 }
 ?>

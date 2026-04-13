@@ -8,7 +8,7 @@ require_once __DIR__ . '/../config.php';
 /**
  * Dispara a geração de áudio na SunoAPI.org.
  */
-function suno_gerar_audio(string $titulo, string $letra, string $vocal_type = 'male vocalist'): string {
+function suno_gerar_audio(string $titulo, string $letra, string $vocal_type = 'male vocalist', ?string $uid = null): string {
     $vocal = str_contains(strtolower($vocal_type), 'female') ? 'f' : 'm';
     $style = "Brazilian Gospel, Contemporary Christian Music, Worship, Soulful, Powerful, Piano, Acoustic Guitar, Studio Quality, Radio-ready";
 
@@ -51,7 +51,7 @@ function suno_gerar_audio(string $titulo, string $letra, string $vocal_type = 'm
 
     if ($http_code >= 400 || !$task_id) {
         $msg = $data['msg'] ?? "HTTP $http_code";
-        logger("SunoAPI.org Error Response: " . $response);
+        logger("SunoAPI.org Error Response: " . $response, $uid);
         throw new RuntimeException("Falha ao iniciar geração: " . $msg);
     }
 
@@ -61,7 +61,7 @@ function suno_gerar_audio(string $titulo, string $letra, string $vocal_type = 'm
 /**
  * Verifica o status da geração por taskId.
  */
-function suno_verificar_status(string $task_id): array {
+function suno_verificar_status(string $task_id, ?string $uid = null): array {
     // Busca detalhes da task no endpoint correto
     $ch = curl_init(SUNO_API_URL . '/generate/record-info?taskId=' . urlencode($task_id));
     curl_setopt_array($ch, [

@@ -28,13 +28,11 @@ $uid    = trim($_GET['uid'] ?? '');
 $secret = trim($_GET['secret'] ?? '');
 $expected = hash_hmac('sha256', $uid, ASAAS_API_KEY);
 
-if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $uid)) {
-    exit;
-}
-
 if (!hash_equals($expected, $secret)) {
     exit; // Segurança: apenas chamadas internas
 }
+
+logger("Worker: Iniciado", $uid);
 
 // Busca a música
 $stmt = db()->prepare('SELECT * FROM musicas WHERE id = ? AND status = ?');
@@ -59,11 +57,11 @@ try {
     // Salva letra no banco
     $stmt = db()->prepare('UPDATE musicas SET titulo = ?, letra = ? WHERE id = ?');
     $stmt->execute([$titulo, $letra, $uid]);
-    logger("Worker [{$uid}]: Letra gerada e salva: {$titulo} (Voz: {$vocal})");
+    logger("Worker: Letra gerada e salva: {$titulo} (Voz: {$vocal})", $uid);
 
     // ETAPA 2: PiAPI (Udio) gera o áudio
-    logger("Worker [{$uid}]: Solicitando áudio ao Suno (Direto)...");
-    $task_id = suno_gerar_audio($titulo, $letra, $vocal);
+    logger("Worker: Solicitando áudio ao Suno (Direto)...", $uid);
+    $task_id = suno_gerar_audio($titulo, $letra, $vocal, $uid);
 
     // Salva task_id no banco
     $stmt = db()->prepare('UPDATE musicas SET task_id = ? WHERE id = ?');
@@ -76,7 +74,7 @@ try {
     for ($attempt = 0; $attempt < $max_attempts; $attempt++) {
         sleep(5);
 
-        $status = suno_verificar_status($task_id);
+        $status = suno_verificar_status($task_id, $uid);
 
         if ($status['status'] === 'concluido' && $status['audio_url']) {
             $stmt = db()->prepare(

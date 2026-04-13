@@ -38,7 +38,7 @@ if ($musica['status'] === 'concluido' && $musica['audio_url']) {
 // Se tem task_id, verifica no Suno
 if (!empty($musica['task_id'])) {
     try {
-        $suno_status = suno_verificar_status($musica['task_id']);
+        $suno_status = suno_verificar_status($musica['task_id'], $uid);
 
         if ($suno_status['status'] === 'concluido' && $suno_status['audio_url']) {
             // Atualiza o banco com a URL do áudio
