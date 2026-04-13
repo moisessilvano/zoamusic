@@ -5,8 +5,6 @@
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/includes/claude.php';
-require_once __DIR__ . '/includes/piapi.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
