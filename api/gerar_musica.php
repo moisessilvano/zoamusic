@@ -7,7 +7,7 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../includes/claude.php';
-require_once __DIR__ . '/../includes/piapi.php';
+require_once __DIR__ . '/../includes/suno.php';
 
 // Fecha a conexão HTTP para liberar o cliente imediatamente (non-blocking)
 if (function_exists('fastcgi_finish_request')) {
@@ -62,8 +62,8 @@ try {
     logger("Worker [{$uid}]: Letra gerada e salva: {$titulo} (Voz: {$vocal})");
 
     // ETAPA 2: PiAPI (Udio) gera o áudio
-    logger("Worker [{$uid}]: Solicitando áudio ao PiAPI...");
-    $task_id = piapi_gerar_audio($titulo, $letra, $vocal);
+    logger("Worker [{$uid}]: Solicitando áudio ao Suno (Direto)...");
+    $task_id = suno_gerar_audio($titulo, $letra, $vocal);
 
     // Salva task_id no banco
     $stmt = db()->prepare('UPDATE musicas SET task_id = ? WHERE id = ?');
@@ -76,7 +76,7 @@ try {
     for ($attempt = 0; $attempt < $max_attempts; $attempt++) {
         sleep(5);
 
-        $status = piapi_verificar_status($task_id);
+        $status = suno_verificar_status($task_id);
 
         if ($status['status'] === 'concluido' && $status['audio_url']) {
             $stmt = db()->prepare(

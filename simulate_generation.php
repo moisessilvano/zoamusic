@@ -6,7 +6,7 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/includes/claude.php';
-require_once __DIR__ . '/includes/piapi.php';
+require_once __DIR__ . '/includes/suno.php';
 
 echo "--- Iniciando Simulação de Geração LOUVOR.NET ---\n";
 
@@ -33,8 +33,8 @@ try {
     $stmt->execute([$titulo, $letra, $uid]);
 
     // ETAPA 2: Áudio com PiAPI
-    echo "[3/4] Solicitando áudio ao PiAPI (Udio)...\n";
-    $task_id = piapi_gerar_audio($titulo, $letra, $vocal);
+    echo "[3/4] Solicitando áudio ao Suno (Direto Oficial)...\n";
+    $task_id = suno_gerar_audio($titulo, $letra, $vocal);
     echo "  - Task ID: $task_id\n";
 
     $stmt = db()->prepare('UPDATE musicas SET task_id = ? WHERE id = ?');
@@ -46,7 +46,7 @@ try {
     $done = false;
     for ($attempt = 1; $attempt <= $max_attempts; $attempt++) {
         sleep(5);
-        $status = piapi_verificar_status($task_id);
+        $status = suno_verificar_status($task_id);
         
         echo "  - Tentativa $attempt: Status = " . $status['status'] . "\n";
 

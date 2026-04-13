@@ -43,6 +43,10 @@ define('ASAAS_ENV',        env('ASAAS_ENV', 'sandbox'));
 define('ASAAS_SANDBOX_URL', env('ASAAS_SANDBOX_URL', 'https://api-sandbox.asaas.com/v3'));
 define('ASAAS_PROD_URL',   env('ASAAS_PROD_URL', 'https://api.asaas.com/api/v3'));
 
+// --- Suno Direto ---
+define('SUNO_API_KEY', env('SUNO_API_KEY'));
+define('SUNO_API_URL', env('SUNO_API_URL'));
+
 // --- App ---
 define('BASE_URL',           env('BASE_URL', 'http://localhost'));
 define('MUSICA_PRICE',       (float) env('MUSICA_PRICE', '19.90'));

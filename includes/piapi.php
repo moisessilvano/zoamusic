@@ -15,39 +15,40 @@ require_once __DIR__ . '/../config.php';
  * @throws RuntimeException
  */
 function piapi_build_style_prompt(string $vocal_type): string {
-    $vt = strtolower(trim($vocal_type));
-    $natural = str_contains($vt, 'female')
-        ? 'warm female Brazilian gospel lead singer, natural relaxed phrasing, spoken-to-sung transitions, human and intimate, not robotic, light natural vibrato'
-        : 'warm male Brazilian gospel lead singer, natural relaxed phrasing, spoken-to-sung transitions, human and intimate, not robotic, light natural vibrato';
-
-    // Estilo coerente: muitos "no X / extremely Y / highly produced" no mesmo prompt costumam deixar voz sintética ou forçada.
-    // IMPORTANTE: idioma vem primeiro para ter o maior peso na interpretação do modelo.
-    $parts = [
-        'IDIOMA EXCLUSIVO: português do Brasil (PT-BR), toda a música cantada em português brasileiro, zero palavras em inglês na voz, nenhuma sílaba inventada',
-        'louvor gospel evangélico brasileiro contemporâneo, música cristã nacional, louvor e adoração',
-        $natural,
-        'voz principal solo na frente da mixagem; coral suave apenas nos refrões, bem atrás da voz principal',
-        'arranjo: piano acústico, violão, baixo elétrico suave, bateria estilo igreja brasileira',
-        'produção: clima de culto ao vivo, dinâmica orgânica, sem compressão excessiva, sem autotune pesado',
-        'final: cadência melódica, sustentar última frase brevemente, fade suave e natural',
+    $vocal = str_contains(strtolower($vocal_type), 'female') ? 'female vocalist' : 'male vocalist';
+    
+    // Suno v3.5 adora tags curtas e diretas. 
+    // O limite ideal é de aproximadamente 120-150 caracteres para melhor fidelidade.
+    $tags = [
+        'Brazilian Gospel',
+        'Contemporary Christian Music',
+        'Worship',
+        $vocal,
+        'Soulful',
+        'Powerful',
+        'Piano',
+        'Acoustic Guitar',
+        'Studio Quality',
+        'Radio-ready',
+        'Inspirational',
+        'High Fidelity'
     ];
 
-    return implode(', ', $parts);
+    return implode(', ', $tags);
 }
 
 function piapi_gerar_audio(string $titulo, string $letra, string $vocal_type = 'male vocalist'): string {
     $style = piapi_build_style_prompt($vocal_type);
     
     $payload = [
-        'model'     => 'music-u', 
+        'model'     => 'suno-v3.5', 
         'task_type' => 'generate_music',
         'input'     => [
-            'title' => $titulo,
-            // Enviamos a letra crua com as tags [Verse], [Chorus] etc que o Udio entende nativamente
-            'lyrics' => $letra, 
-            'gpt_description_prompt' => $style,
-            'lyrics_type' => 'user', // Indica que estamos fornecendo a letra exata
-            'seed' => -1
+            'prompt'      => $letra,
+            'tags'        => $style,
+            'title'       => $titulo,
+            'make_instrumental' => false,
+            'mv'          => 'chirp-v3-5'
         ],
         'config' => [
             'service_mode' => 'public'
@@ -55,7 +56,7 @@ function piapi_gerar_audio(string $titulo, string $letra, string $vocal_type = '
     ];
 
     $url = PIAPI_BASE_URL . '/task';
-    logger("Chamando PiAPI: $url");
+    logger("Chamando PiAPI (Suno v3.5): $url");
     
     $masked_key = substr(PIAPI_KEY, 0, 4) . '...' . substr(PIAPI_KEY, -4);
     logger("Usando Chave PiAPI: $masked_key");
