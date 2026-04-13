@@ -213,7 +213,7 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
     </div>
 
     <!-- BOTÃO JÁ PAGUEI -->
-    <form method="POST" action="confirmar_pagamento.php">
+    <form method="POST" action="confirmar_pagamento">
         <input type="hidden" name="uid" value="<?= htmlspecialchars($uid) ?>">
         <button type="submit" class="pulse-gold btn-gold w-full py-5 rounded-2xl text-white font-bold text-xl tracking-wide">
             ✅ JÁ PAGUEI — CRIAR MINHA MÚSICA

@@ -23,7 +23,7 @@ if ($musica['status'] === 'concluido') {
 }
 
 if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($musica['letra'])) {
-    $worker_url = BASE_URL . '/api/gerar_musica.php?uid=' . urlencode($uid) . '&secret=' . urlencode(hash_hmac('sha256', $uid, ASAAS_API_KEY));
+    $worker_url = BASE_URL . 'api/gerar_musica?uid=' . urlencode($uid) . '&secret=' . urlencode(hash_hmac('sha256', $uid, ASAAS_API_KEY));
     $ch = curl_init($worker_url);
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER=>false, CURLOPT_TIMEOUT_MS=>500, CURLOPT_NOSIGNAL=>true]);
     curl_exec($ch);
