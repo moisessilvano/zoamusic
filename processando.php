@@ -119,6 +119,12 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
         <!-- Card de etapas -->
         <div class="card rounded-2xl p-7 mb-8 text-left">
             <p class="font-semibold text-sm mb-5 text-center" style="color:#1C1917;">O que está acontecendo:</p>
+            
+            <!-- Barra de Progresso Nova -->
+            <div class="w-full bg-slate-100 h-2 rounded-full mb-8 overflow-hidden">
+                <div id="progress-bar" class="h-full bg-gradient-to-r from-[#C9A84C] to-[#E8CC80] transition-all duration-1000 ease-out" style="width: 5%;"></div>
+            </div>
+
             <div class="space-y-4">
                 <div class="step-anim flex items-center gap-3" style="animation-delay:0.2s">
                     <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
@@ -141,6 +147,10 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
                 </div>
             </div>
         </div>
+
+        <p class="text-xs mb-4" style="color:#8B7355; opacity: 0.8;" id="waiting-hint">
+            ⚠️ O processo leva de 2 a 4 minutos. Por favor, não feche esta página.
+        </p>
 
         <!-- Versículo rotativo -->
         <div class="rounded-2xl px-6 py-4 mb-6" style="background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.18);">
@@ -196,6 +206,32 @@ function markActive(id, label) {
 
 let lastLetra = false;
 let lastTask  = false;
+let progress  = 5;
+
+// Faz a barra de progresso andar lentamente
+const progressInterval = setInterval(() => {
+    if (progress < 92) {
+        progress += (progress < 50) ? 0.5 : 0.2;
+        document.getElementById('progress-bar').style.width = progress + '%';
+    }
+}, 1000);
+
+const statusMessages = [
+    'Compondo a melodia base...',
+    'Afinando instrumentos...',
+    'Sincronizando vozes e harmonia...',
+    'Aplicando efeitos de estúdio...',
+    'Finalizando a mixagem...',
+    'Preparando seu link exclusivo...',
+];
+let msgIndex = 0;
+const msgInterval = setInterval(() => {
+    const sunoText = document.getElementById('step-suno-text');
+    if (lastTask && sunoText && msgIndex < statusMessages.length) {
+        sunoText.textContent = statusMessages[msgIndex];
+        msgIndex++;
+    }
+}, 15000); // Muda a cada 15 segundos
 
 async function checkStatus() {
     try {
@@ -206,19 +242,23 @@ async function checkStatus() {
         if (data.has_letra && !lastLetra) {
             markDone('step-claude');
             lastLetra = true;
+            progress = Math.max(progress, 30);
         }
         if (data.has_task && !lastTask) {
             markActive('step-suno', 'Compondo a melodia com voz...');
             lastTask = true;
+            progress = Math.max(progress, 45);
         }
 
         // Se tem task_id mas ainda não concluído: dispara poll do Suno em paralelo (fire-and-forget)
-        // Isso NÃO bloqueia esta função — é uma requisição independente de ~4s
         if (data.has_task && data.status !== 'concluido') {
             fetch('api/poll_suno.php?uid=' + encodeURIComponent(uid), { keepalive: true }).catch(() => {});
         }
 
         if (data.status === 'concluido' && data.audio_url) {
+            clearInterval(progressInterval);
+            clearInterval(msgInterval);
+            document.getElementById('progress-bar').style.width = '100%';
             markDone('step-claude');
             markDone('step-suno');
             markDone('step-final');
