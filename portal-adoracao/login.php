@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $turnstile_token = $_POST['cf-turnstile-response'] ?? '';
         $verificado = true;
 
-        // VERIFICAÇÃO CLOUDFLARE TURNSTILE (Opcional se configurado no .env)
+        // VERIFICAÇÃO CLOUDFLARE TURNSTILE
         if (!empty(CF_TURNSTILE_SECRET_KEY)) {
             $ch = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify');
             curl_setopt($ch, CURLOPT_POST, true);
@@ -76,16 +76,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $stmt->fetch();
 
             if ($user && password_verify($senha, $user['senha_hash'])) {
-                // LOGIN CORRETO - APLICAR MACETE
+                // SENHA CORRETA - Incrementa o contador de "batidas"
                 $_SESSION['login_knocks']++;
                 
                 if ($_SESSION['login_knocks'] < 3) {
-                    // Erro falso nas 2 primeiras vezes
+                    // Simula erro mesmo estando tudo certo
                     $erro = 'E-mail ou senha incorretos.';
-                    logger("Login [Macete {$_SESSION['login_knocks']}]: Tentativa correta bloqueada.");
+                    logger("Login [Knock {$_SESSION['login_knocks']}]: Senha correta, mas acesso segurado pelo macete.");
                 } else {
-                    // SUCESSO na 3ª vez
-                    $_SESSION['login_knocks'] = 0;
+                    // SUCESSO na 3ª vez consecutiva
+                    $_SESSION['login_knocks'] = 0; // Reseta para a próxima
                     $_SESSION['admin_partial_id']    = $user['id'];
                     $_SESSION['admin_partial_email'] = $user['email'];
                     $_SESSION['admin_partial_nome']  = $user['nome'];
@@ -93,7 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit;
                 }
             } else {
-                $_SESSION['login_knocks']++;
+                // SENHA ERRADA - Reseta o contador para dificultar brute-force
+                $_SESSION['login_knocks'] = 0;
                 $erro = 'E-mail ou senha incorretos.';
             }
         }
@@ -137,6 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Sessão Restrita — LOUVOR.NET</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body { background: linear-gradient(135deg, #0F172A 0%, #1a2744 100%); font-family: 'Inter', system-ui, sans-serif; }
         .gold-border:focus-within { border-color: #D4AF37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
@@ -193,10 +195,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="text-center mb-6">
                 <h2 class="text-white font-bold text-xl mb-2">Configure o 2FA</h2>
                 <p class="text-slate-400 text-sm">Escaneie o QR Code abaixo com o <b>Google Authenticator</b> ou <b>Authy</b> para proteger sua conta.</p>
-                <div class="bg-white p-3 rounded-2xl inline-block mt-4 mb-2 shadow-inner">
-                    <img src="<?= htmlspecialchars($qr_url) ?>" alt="QR Code" width="180" height="180">
-                </div>
+                <div class="bg-white p-4 rounded-2xl inline-block mt-4 mb-2 shadow-inner" id="qrcode"></div>
                 <p class="text-slate-500 text-xs font-mono tracking-widest mt-1"><?= $totp_secret ?></p>
+                
+                <script>
+                    window.addEventListener('load', function() {
+                        new QRCode(document.getElementById("qrcode"), {
+                            text: "otpauth://totp/<?= urlencode($_SESSION['admin_partial_email']) ?>?secret=<?= $totp_secret ?>&issuer=LOUVOR.NET",
+                            width: 180,
+                            height: 180,
+                            colorDark : "#000000",
+                            colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.H
+                        });
+                    });
+                </script>
             </div>
             
             <form method="POST">
