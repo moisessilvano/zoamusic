@@ -27,22 +27,38 @@ if ($musica['status'] === 'processando') {
     header('Location: processando.php?uid=' . urlencode($uid)); exit;
 }
 
-$pix_gerado = !empty($musica['asaas_id']);
+$pix_gerado = !empty($musica['asaas_id']) && !empty($musica['qr_code_img']);
 $pix_error  = '';
 
 if (!$pix_gerado) {
     try {
-        $pix = asaas_criar_pix($uid);
-        db()->prepare('UPDATE musicas SET asaas_id=?, pix_key=?, qr_code_img=? WHERE id=?')
-            ->execute([$pix['asaas_id'], $pix['pix_key'], $pix['qr_code_image'], $uid]);
-        $musica['asaas_id']    = $pix['asaas_id'];
-        $musica['pix_key']     = $pix['pix_key'];
-        $musica['qr_code_img'] = $pix['qr_code_image'];
+        // Se já tem ID mas não tem imagem, apenas recupera a imagem
+        if (!empty($musica['asaas_id']) && empty($musica['qr_code_img'])) {
+            $pix_data = asaas_request('GET', "/payments/{$musica['asaas_id']}/pixQrCode");
+            $qr_image = $pix_data['encodedImage'] ?? '';
+            $pix_key  = $pix_data['payload'] ?? '';
+            
+            db()->prepare('UPDATE musicas SET pix_key=?, qr_code_img=? WHERE id=?')
+                ->execute([$pix_key, $qr_image, $uid]);
+            
+            $musica['pix_key']     = $pix_key;
+            $musica['qr_code_img'] = $qr_image;
+        } else {
+            // Cria uma nova cobrança do zero
+            $pix = asaas_criar_pix($uid);
+            db()->prepare('UPDATE musicas SET asaas_id=?, pix_key=?, qr_code_img=? WHERE id=?')
+                ->execute([$pix['asaas_id'], $pix['pix_key'], $pix['qr_code_image'], $uid]);
+            $musica['asaas_id']    = $pix['asaas_id'];
+            $musica['pix_key']     = $pix['pix_key'];
+            $musica['qr_code_img'] = $pix['qr_code_image'];
+        }
         $pix_gerado = true;
-    } catch (RuntimeException $e) {
+    } catch (Exception $e) {
         $pix_error = $e->getMessage();
-        $musica['pix_key']     = '00020126580014br.gov.bcb.pix0136' . $uid . '5204000053039865802BR5925LOUVOR NET6009SAO PAULO62070503***6304';
-        $musica['qr_code_img'] = '';
+        // Fallback para código copia e cola se falhar feio
+        if (empty($musica['pix_key'])) {
+            $musica['pix_key'] = '00020126580014br.gov.bcb.pix0136' . $uid . '5204000053039865802BR5925LOUVOR NET6009SAO PAULO62070503***6304';
+        }
     }
 }
 
