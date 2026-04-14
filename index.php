@@ -40,11 +40,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db()->prepare('INSERT INTO musicas (id, inspiracao, nome, telefone, status) VALUES (?, ?, ?, ?, ?)')
             ->execute([$uid, $inspiracao, $nome ?: null, $telefone ?: null, 'aguardando_pagamento']);
         
-        // Marca que acabamos de gerar um lead para o Analytics
-        session_start();
-        $_SESSION['ga_event'] = 'generate_lead';
-        
-        header('Location: checkout.php?uid=' . urlencode($uid));
+        // Salva no histórico do navegador via Script (passando para o frontend)
+        echo "<script>
+            try {
+                const uid = " . json_encode($uid) . ";
+                const data = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+                let hist = JSON.parse(localStorage.getItem('louvor_historico') || '[]');
+                hist = hist.filter(m => m.uid !== uid);
+                hist.push({ uid, titulo: 'Aguardando Pagamento', data, status: 'pendente' });
+                localStorage.setItem('louvor_historico', JSON.stringify(hist));
+            } catch(e) {}
+            window.location = 'checkout.php?uid=' + encodeURIComponent(" . json_encode($uid) . ");
+        </script>";
         exit;
     }
 }
@@ -1124,18 +1131,26 @@ fim_post:
             list.innerHTML = '<p style="text-align:center;color:#B8A07A;padding:32px 0;font-size:14px;">Você ainda não criou nenhuma música neste dispositivo.</p>';
             return;
         }
-        list.innerHTML = hist.slice().reverse().map(m =>
-            `<a href="ouvir.php?uid=${encodeURIComponent(m.uid)}" style="display:flex;align-items:center;
+        // Ordena por data (as mais recentes primeiro)
+        list.innerHTML = hist.slice().reverse().map(m => {
+            const isDone = m.status !== 'pendente';
+            const icon = isDone ? '🎵' : '⏳';
+            const color = isDone ? 'linear-gradient(135deg,#C9A84C,#E8CC80)' : 'linear-gradient(135deg,#E8D9A8,#F0E8CC)';
+            const statusTxt = isDone ? '' : ' <span style="font-size:10px; color:#B8922A; background:#FBF6E9; padding:2px 6px; border-radius:4px; margin-left:4px; font-weight:bold; border:1px solid #E8D9A8;">AGUARDANDO</span>';
+            
+            return `<a href="ouvir.php?uid=${encodeURIComponent(m.uid)}" style="display:flex;align-items:center;
               gap:12px;padding:14px 0;border-bottom:1px solid #F0E8CC;text-decoration:none;">
-              <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#C9A84C,#E8CC80);
-                          display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0;">🎵</div>
+              <div style="width:40px;height:40px;border-radius:50%;background:${color};
+                          display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0;">${icon}</div>
               <div style="flex:1;min-width:0;">
-                <p style="font-weight:600;color:#1C1917;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px;">${m.titulo||'Minha música'}</p>
-                <p style="font-size:11px;color:#A08060;margin:4px 0 0;">${m.data||''}</p>
+                <p style="font-weight:600;color:#1C1917;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px;">
+                    ${m.titulo || 'Minha música'}${statusTxt}
+                </p>
+                <p style="font-size:11px;color:#A08060;margin:4px 0 0;">${m.data || ''}</p>
               </div>
               <span style="color:#C9A84C;font-size:20px;">›</span>
-            </a>`
-        ).join('');
+            </a>`;
+        }).join('');
     }
 </script>
 
