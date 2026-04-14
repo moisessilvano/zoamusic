@@ -120,7 +120,15 @@ function asaas_request(string $method, string $path, array $body = []): array {
         throw new RuntimeException("Asaas cURL error: {$curl_error}");
     }
     if ($http_code >= 400) {
-        throw new RuntimeException("Asaas API error {$http_code}: {$response}");
+        $details = json_decode($response, true);
+        $msg = "Erro {$http_code}: ";
+        if (isset($details['errors']) && is_array($details['errors'])) {
+            $msgs = array_map(fn($e) => $m = $e['description'] ?? $e['code'] ?? 'Erro desconhecido', $details['errors']);
+            $msg .= implode(" | ", $msgs);
+        } else {
+            $msg .= $response;
+        }
+        throw new RuntimeException($msg);
     }
 
     return json_decode($response, true) ?? [];
