@@ -64,6 +64,25 @@ function asaas_criar_pix(string $musica_uuid): array {
 }
 
 /**
+ * Verifica se um pagamento foi recebido/confirmado no Asaas.
+ *
+ * @param string $payment_id ID da cobrança no Asaas
+ * @return bool True se pago, False caso contrário
+ */
+function asaas_verificar_pagamento(string $payment_id): bool {
+    try {
+        $cobranca = asaas_request('GET', "/payments/{$payment_id}");
+        $status = $cobranca['status'] ?? '';
+
+        // Status que indicam pagamento confirmado
+        return in_array($status, ['RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH']);
+    } catch (Exception $e) {
+        logger("Erro ao verificar pagamento Asaas [{$payment_id}]: " . $e->getMessage());
+        return false;
+    }
+}
+
+/**
  * Helper para requisições à API Asaas.
  *
  * @param string $method  GET | POST

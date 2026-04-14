@@ -241,7 +241,14 @@ $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
 
 <!-- FOOTER -->
 <footer class="px-6 py-8 text-center" style="background:#fff; border-top:1px solid rgba(201,168,76,0.12);">
-    <p class="font-display italic text-sm mb-1" style="color:#B8A07A;">"Tudo que tem fôlego louve ao Senhor." — Salmos 150:6</p>
+    <p class="font-display italic text-sm mb-4" style="color:#B8A07A;">"Tudo que tem fôlego louve ao Senhor." — Salmos 150:6</p>
+    <div class="flex items-center justify-center gap-6 text-xs mb-4" style="color:#B8A07A;">
+        <a href="termos.php" class="hover:text-[#C9A84C] transition-colors">Termos de Uso</a>
+        <span>·</span>
+        <a href="privacidade.php" class="hover:text-[#C9A84C] transition-colors">Privacidade</a>
+        <span>·</span>
+        <a href="/" class="hover:text-[#C9A84C] transition-colors">Ajuda (SAC)</a>
+    </div>
     <p class="text-xs" style="color:#C8B99A;">© <?= date('Y') ?> LOUVOR.NET</p>
 </footer>
 

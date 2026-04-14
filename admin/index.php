@@ -24,6 +24,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             db()->prepare("UPDATE musicas SET status='concluido', audio_url=? WHERE id=?")->execute([$audio, $uid]);
             $flash = "✅ Música marcada como concluída."; $flash_type = 'green';
         }
+    } elseif ($action === 'forcar_pagamento' && $valid_uid) {
+        // Muda para processando
+        db()->prepare("UPDATE musicas SET status='processando' WHERE id=?")->execute([$uid]);
+        
+        // Dispara o worker via CURL (fire and forget)
+        $secret = hash_hmac('sha256', $uid, ASAAS_API_KEY);
+        $worker_url = rtrim(BASE_URL, '/') . "/api/gerar_musica.php?uid={$uid}&secret={$secret}";
+        $ch = curl_init($worker_url);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+        curl_exec($ch);
+        curl_close($ch);
+
+        $flash = "⚡ Pagamento forçado! A geração da música foi iniciada."; $flash_type = 'yellow';
     } elseif ($action === 'reprocessar' && $valid_uid) {
         db()->prepare("UPDATE musicas SET status='processando', task_id=NULL, letra=NULL, audio_url=NULL WHERE id=?")->execute([$uid]);
         $flash = "🔄 Música enviada para reprocessamento."; $flash_type = 'blue';
@@ -211,6 +225,11 @@ function fmt_brl(float $val): string {
         <a href="index.php?status=erro" class="nav-link <?= $status_filter==='erro' ? 'active' : '' ?> flex items-center gap-3 px-3 py-2.5 text-slate-300 text-sm">
             <span>❌</span> Com Erro
             <span class="ml-auto badge-red text-xs px-2 py-0.5 rounded-full font-semibold"><?= $stats['com_erro'] ?></span>
+        </a>
+
+        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider px-3 py-2 mt-4">Atendimento</p>
+        <a href="sac.php" class="nav-link flex items-center gap-3 px-3 py-2.5 text-slate-300 text-sm">
+            <span>📩</span> Mensagens (SAC)
         </a>
 
         <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider px-3 py-2 mt-4">Sistema</p>
@@ -412,8 +431,13 @@ function fmt_brl(float $val): string {
                                     <a href="../ouvir.php?uid=<?= urlencode($m['id']) ?>" target="_blank"
                                         class="p-1.5 rounded-lg text-slate-400 hover:text-green-400 hover:bg-green-500/10 transition-colors" title="Ouvir">🎵</a>
                                     <?php endif; ?>
-                                    <a href="../checkout.php?uid=<?= urlencode($m['id']) ?>" target="_blank"
-                                        class="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-colors" title="Checkout">💳</a>
+                                    <?php if ($m['status'] === 'aguardando_pagamento'): ?>
+                                    <form method="POST" class="inline" onsubmit="return confirm('Forçar pagamento manual e iniciar geração?')">
+                                        <input type="hidden" name="action" value="forcar_pagamento">
+                                        <input type="hidden" name="uid" value="<?= htmlspecialchars($m['id']) ?>">
+                                        <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:text-yellow-400 hover:bg-yellow-500/10 transition-colors" title="Forçar Pagamento">⚡</button>
+                                    </form>
+                                    <?php endif; ?>
                                     <?php if (in_array($m['status'], ['erro','processando'])): ?>
                                     <form method="POST" class="inline" onsubmit="return confirm('Reprocessar?')">
                                         <input type="hidden" name="action" value="reprocessar">

@@ -29,7 +29,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LOUVOR.NET — Música Cristã Criada por IA para Você</title>
+    
+    <!-- SEO & Social Sharing -->
     <meta name="description" content="Transforme sua história, oração ou versículo em uma música cristã exclusiva com letra e melodia geradas por Inteligência Artificial.">
+    <meta property="og:title" content="LOUVOR.NET — Sua história em um louvor eterno">
+    <meta property="og:description" content="Crie uma música cristã exclusiva com IA. Sua oração agora tem melodia.">
+    <meta property="og:image" content="<?= BASE_URL ?>/assets/og-image.jpg">
+    <meta property="og:url" content="<?= BASE_URL ?>">
+    <meta name="twitter:card" content="summary_large_image">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -548,9 +555,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             📱 Receber SMS quando a música ficar pronta
                             <span style="color:#B8A07A; font-weight:400;">(opcional)</span>
                         </label>
-                        <input type="tel" name="telefone"
+                        <input type="tel" name="telefone" id="input-telefone"
                             value="<?= htmlspecialchars($_POST['telefone'] ?? '') ?>"
                             placeholder="(11) 9 0000-0000"
+                            maxlength="15"
                             style="width:100%; border-radius:14px; padding:14px 20px; font-size:15px;
                                    background:#FDFBF5; border:1.5px solid #E8D9A8; color:#1C1917;
                                    outline:none; box-sizing:border-box; transition:border-color .2s;"
@@ -750,17 +758,161 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <p class="font-display italic text-sm mb-4" style="color:#A08060;">"Crie em mim, ó Deus, um coração puro." — Salmos 51:10</p>
     <div class="flex items-center justify-center gap-6 text-xs mb-4" style="color:#B8A07A;">
-        <a href="#" class="hover:text-[#C9A84C] transition-colors">Termos de Uso</a>
+        <a href="termos.php" class="hover:text-[#C9A84C] transition-colors">Termos de Uso</a>
         <span>·</span>
-        <a href="#" class="hover:text-[#C9A84C] transition-colors">Privacidade</a>
+        <a href="privacidade.php" class="hover:text-[#C9A84C] transition-colors">Privacidade</a>
+        <span>·</span>
+        <button onclick="abrirSac()" class="hover:text-[#C9A84C] transition-colors">Ajuda (SAC)</button>
         <span>·</span>
         <a href="admin/login.php" class="hover:text-[#C9A84C] transition-colors">Admin</a>
     </div>
     <p class="text-xs" style="color:#C8B99A;">© <?= date('Y') ?> LOUVOR.NET — Todos os direitos reservados.</p>
 </footer>
 
+<!-- Botão WhatsApp Flutuante (COMENTADO)
+<a href="https://api.whatsapp.com/send?phone=5511999999999&text=Olá! Preciso de ajuda com o LOUVOR.NET" 
+   target="_blank"
+   style="position:fixed; bottom:24px; right:24px; z-index:150;
+          background:#25d366; color:#fff; width:60px; height:60px; border-radius:50%;
+          display:flex; align-items:center; justify-content:center;
+          box-shadow:0 10px 30px rgba(0,0,0,0.2); transition:transform 0.2s;"
+   onmouseover="this.style.transform='scale(1.1)'"
+   onmouseout="this.style.transform='scale(1)'">
+    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.555 4.118 1.528 5.843L0 24l6.335-1.652A11.954 11.954 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.006-1.372l-.36-.213-3.727.977.992-3.63-.234-.373A9.818 9.818 0 1 1 12 21.818z"/>
+    </svg>
+</a>
+-->
+
+<!-- Botão Instagram Flutuante -->
+<a href="https://instagram.com/<?= INSTAGRAM_HANDLE ?>" 
+   target="_blank"
+   style="position:fixed; bottom:24px; right:24px; z-index:150;
+          background:linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); 
+          color:#fff; width:60px; height:60px; border-radius:50%;
+          display:flex; align-items:center; justify-content:center;
+          box-shadow:0 10px 30px rgba(0,0,0,0.2); transition:transform 0.2s;"
+   onmouseover="this.style.transform='scale(1.1)'"
+   onmouseout="this.style.transform='scale(1)'">
+    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+    </svg>
+</a>
+
+<!-- Banner Cookies LGPD -->
+<div id="cookie-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:200;
+     background:#fff; border-top:2px solid #C9A84C; padding:20px 40px; box-shadow:0 -10px 40px rgba(0,0,0,0.1);">
+    <div style="max-width:1200px; margin:0 auto; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:20px;">
+        <p style="font-size:14px; color:#6B5B3E; flex:1; min-width:280px;">
+            Utilizamos cookies para personalizar sua experiência e processar seus pedidos com segurança. Ao continuar navegando, você concorda com nossos <a href="termos.php" class="underline">Termos</a> e <a href="privacidade.php" class="underline">Privacidade</a>.
+        </p>
+        <button onclick="aceitarCookies()" style="background:#C9A84C; color:#fff; border:none; padding:12px 32px; border-radius:12px; font-weight:700; cursor:pointer;">Aceitar e Continuar</button>
+    </div>
+</div>
+
+
+<!-- Modal SAC -->
+<div id="sac-modal" style="display:none;position:fixed;inset:0;z-index:200;
+     background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:20px;"
+     onclick="if(event.target===this)fecharSac()">
+    <div style="background:#fff;border-radius:24px;width:100%;max-width:500px;
+                padding:32px;box-shadow:0 20px 60px rgba(0,0,0,0.15);" onclick="event.stopPropagation()">
+        <div style="display:flex;align-items:center;justify-content:between;margin-bottom:24px;">
+            <h3 style="font-size:22px;font-weight:700;color:#1C1917;margin:0;flex:1;">Precisa de ajuda?</h3>
+            <button onclick="fecharSac()" style="border:none;background:#F0E8CC;border-radius:50%;
+                    width:32px;height:32px;cursor:pointer;font-size:14px;color:#8B6914;">✕</button>
+        </div>
+        
+        <form id="sac-form" onsubmit="enviarSac(event)" style="display:flex;flex-direction:column;gap:16px;">
+            <div>
+                <label style="display:block;font-size:12px;font-weight:600;color:#8B7355;margin-bottom:6px;">Seu Nome</label>
+                <input type="text" name="nome" required style="width:100%;padding:12px 16px;border-radius:12px;border:1.5px solid #E8D9A8;outline:none;" placeholder="Como podemos te chamar?">
+            </div>
+            <div style="display:grid;grid-template-cols:1fr 1fr;gap:12px;">
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:600;color:#8B7355;margin-bottom:6px;">E-mail</label>
+                    <input type="email" name="email" required style="width:100%;padding:12px 16px;border-radius:12px;border:1.5px solid #E8D9A8;outline:none;" placeholder="seu@email.com">
+                </div>
+                <div>
+                    <label style="display:block;font-size:12px;font-weight:600;color:#8B7355;margin-bottom:6px;">WhatsApp (opcional)</label>
+                    <input type="tel" name="whatsapp" style="width:100%;padding:12px 16px;border-radius:12px;border:1.5px solid #E8D9A8;outline:none;" placeholder="(00) 00000-0000">
+                </div>
+            </div>
+            <div>
+                <label style="display:block;font-size:12px;font-weight:600;color:#8B7355;margin-bottom:6px;">Assunto</label>
+                <select name="assunto" required style="width:100%;padding:12px 16px;border-radius:12px;border:1.5px solid #E8D9A8;outline:none;background:#fff;">
+                    <option value="">Selecione...</option>
+                    <option value="Dúvida sobre o serviço">Dúvida sobre o serviço</option>
+                    <option value="Problema no pagamento">Problema no pagamento</option>
+                    <option value="Música não carregou">Música não carregou</option>
+                    <option value="Elogio ou Sugestão">Elogio ou Sugestão</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+            <div>
+                <label style="display:block;font-size:12px;font-weight:600;color:#8B7355;margin-bottom:6px;">Mensagem</label>
+                <textarea name="mensagem" required style="width:100%;padding:12px 16px;border-radius:12px;border:1.5px solid #E8D9A8;outline:none;min-height:100px;resize:none;" placeholder="Como podemos te ajudar?"></textarea>
+            </div>
+            <button type="submit" id="btn-sac" style="background:linear-gradient(135deg,#C9A84C,#D4AF37);color:#fff;border:none;padding:16px;border-radius:14px;font-weight:700;cursor:pointer;margin-top:8px;">
+                Enviar Mensagem
+            </button>
+        </form>
+    </div>
+</div>
 
 <script>
+    // ── Funções de SAC ──
+    function abrirSac() {
+        document.getElementById('sac-modal').style.display = 'flex';
+    }
+    function fecharSac() {
+        document.getElementById('sac-modal').style.display = 'none';
+    }
+    async function enviarSac(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-sac');
+        const form = document.getElementById('sac-form');
+        const originalText = btn.textContent;
+        
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+        
+        const formData = new FormData(form);
+        
+        try {
+            const res = await fetch('api/enviar_sac.php', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            
+            if (data.ok) {
+                alert(data.message);
+                form.reset();
+                fecharSac();
+            } else {
+                alert(data.error || 'Ocorreu um erro.');
+            }
+        } catch (err) {
+            alert('Erro de conexão.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    }
+
+    // ── Lógica de Cookies ──
+    function aceitarCookies() {
+        localStorage.setItem('cookies_aceitos', 'true');
+        document.getElementById('cookie-banner').style.display = 'none';
+    }
+    window.addEventListener('load', () => {
+        if (!localStorage.getItem('cookies_aceitos')) {
+            document.getElementById('cookie-banner').style.display = 'block';
+        }
+    });
+
     // ── Sugestões de tema ──
     function aplicarTag(btn) {
         const ta = document.querySelector('textarea[name="inspiracao"]');
@@ -904,6 +1056,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     window.fecharHistorico = function() {
         document.getElementById('historico-modal').style.display = 'none';
     };
+
+    // ── Máscara de Telefone ──
+    const telInput = document.getElementById('input-telefone');
+    if (telInput) {
+        telInput.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, "");
+            v = v.substring(0, 11); // limita 11 dígitos
+            if (v.length > 0) {
+                v = "(" + v;
+                if (v.length > 3) v = v.substring(0, 3) + ") " + v.substring(3);
+                if (v.length > 10) v = v.substring(0, 10) + "-" + v.substring(10);
+                else if (v.length > 6) v = v.substring(0, 6) + " " + v.substring(6);
+            }
+            e.target.value = v;
+        });
+    }
+
     function renderHistorico() {
         const list = document.getElementById('historico-list');
         let hist = [];

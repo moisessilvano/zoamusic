@@ -34,9 +34,28 @@ if (!$musica || $musica['status'] === 'concluido' || $musica['status'] === 'erro
 $result = suno_verificar_status($musica['task_id'], $uid, 4);
 
 if ($result['status'] === 'concluido' && $result['audio_url']) {
+    // ETAPA 1: Download local do áudio para garantir persistência
+    $local_path = 'assets/musicas/' . $uid . '.mp3';
+    $dir = __DIR__ . '/../assets/musicas';
+    if (!is_dir($dir)) mkdir($dir, 0777, true);
+
+    $ch = curl_init($result['audio_url']);
+    $fp = fopen(__DIR__ . '/../' . $local_path, 'wb');
+    curl_setopt($ch, CURLOPT_FILE, $fp);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+    curl_exec($ch);
+    curl_close($ch);
+    fclose($fp);
+
+    // Se o download falhou (arquivo vazio), mantém a URL remota como fallback
+    $final_url = (filesize(__DIR__ . '/../' . $local_path) > 0) ? $local_path : $result['audio_url'];
+
+    // ETAPA 2: Atualiza o banco de dados
     $stmt = db()->prepare("UPDATE musicas SET audio_url = ?, status = 'concluido' WHERE id = ?");
-    $stmt->execute([$result['audio_url'], $uid]);
-    logger("poll_suno [{$uid}]: Áudio concluído! URL: {$result['audio_url']}");
+    $stmt->execute([$final_url, $uid]);
+    logger("poll_suno [{$uid}]: Áudio concluído e salvo localmente em: {$final_url}");
 
     // Gera/recupera o link encurtado
     $long_url = rtrim(BASE_URL, '/') . '/ouvir.php?uid=' . urlencode($uid);

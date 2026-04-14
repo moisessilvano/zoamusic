@@ -55,6 +55,8 @@ define('ZENVIA_FROM',  env('ZENVIA_FROM', 'LOUVORNET'));
 define('BASE_URL',           env('BASE_URL', 'http://localhost'));
 define('MUSICA_PRICE',       (float) env('MUSICA_PRICE', '19.90'));
 define('MUSICA_DESCRIPTION', env('MUSICA_DESCRIPTION', 'LOUVOR.NET - Música Cristã Personalizada'));
+define('ASAAS_WEBHOOK_TOKEN', env('ASAAS_WEBHOOK_TOKEN', ''));
+define('INSTAGRAM_HANDLE',    env('INSTAGRAM_HANDLE', 'louvor.net'));
 
 function asaas_url(): string {
     return ASAAS_ENV === 'production' ? ASAAS_PROD_URL : ASAAS_SANDBOX_URL;

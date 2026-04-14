@@ -6,6 +6,8 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
 
+require_once __DIR__ . '/includes/asaas.php';
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     die('Método não permitido.');
@@ -38,11 +40,18 @@ if ($musica['status'] === 'processando') {
     exit;
 }
 
-// Marca como processando apenas se estiver aguardando
+// VERIFICAÇÃO REAL COM ASAAS
+if (!asaas_verificar_pagamento($musica['asaas_id'])) {
+    // Se não foi pago, redireciona de volta para o checkout com um aviso (opcional)
+    header('Location: checkout.php?uid=' . urlencode($uid) . '&error=not_paid');
+    exit;
+}
+
+// Marca como processando apenas se o pagamento for confirmado
 $stmt = db()->prepare("UPDATE musicas SET status = 'processando' WHERE id = ?");
 $stmt->execute([$uid]);
 
-logger("Pagamento confirmado manualmente para música [{$uid}]. Iniciando geração.");
+logger("Pagamento VALIDADO via API para música [{$uid}]. Iniciando geração.");
 
 // Redireciona imediatamente para a tela de processamento
 // A geração real acontece em background via processando.php
