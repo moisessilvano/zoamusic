@@ -185,9 +185,15 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
         <p class="text-sm italic" style="color:#44403C;">"<?= htmlspecialchars($inspiracao_preview) ?>"</p>
     </div>
 
-    <?php if ($pix_error): ?>
+    <?php if (ASAAS_ENV === 'sandbox'): ?>
     <div class="rounded-xl px-5 py-3 mb-5 text-sm" style="background:#FFFBEB; border:1px solid #FDE68A; color:#92400E;">
         ⚠ Modo demonstração (sandbox)
+    </div>
+    <?php endif; ?>
+
+    <?php if ($pix_error && ASAAS_ENV === 'production'): ?>
+    <div class="rounded-xl px-5 py-3 mb-5 text-sm" style="background:#FEF2F2; border:1px solid #FECACA; color:#B91C1C;">
+        ⚠ Erro ao gerar PIX: <?= htmlspecialchars($pix_error) ?>
     </div>
     <?php endif; ?>
 
