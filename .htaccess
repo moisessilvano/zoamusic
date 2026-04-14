@@ -1,97 +1,26 @@
 # ============================================================
-# LOUVOR.NET — Apache .htaccess
-# Requer: mod_rewrite, mod_headers, mod_expires
+# LOUVOR.NET - Proteção de Servidor
 # ============================================================
 
-Options -Indexes -MultiViews
-ServerSignature Off
+# 1. Impede a listagem de pastas
+Options -Indexes
 
-# ── Engine de reescrita ─────────────────────────────────────
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteBase /
-
-    # --- Bloquear acesso direto a arquivos sensíveis ---
-    RewriteRule ^\.env$                  - [F,L]
-    RewriteRule ^\.env\..*$              - [F,L]
-    RewriteRule ^config\.php$            - [F,L]
-    RewriteRule ^db\.php$                - [F,L]
-    RewriteRule ^composer\.json$         - [F,L]
-    RewriteRule ^composer\.lock$         - [F,L]
-    RewriteRule ^package\.json$          - [F,L]
-    RewriteRule ^\.git/                  - [F,L]
-    RewriteRule ^includes/               - [F,L]
-    RewriteRule ^logs/                   - [F,L]
-
-    # --- Links curtos: /s/CODIGO → s/index.php?code=CODIGO ---
-    RewriteRule ^s/([a-zA-Z0-9]{3,12})/?$ s/index.php?code=$1 [L,QSA]
-
-    # --- Remover .php da URL (clean URLs) ---
-    # 1. Redireciona de /página.php para /página (APENAS SE NÃO FOR POST)
-    RewriteCond %{REQUEST_METHOD} !POST
-    RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s([^.]+)\.php [NC]
-    RewriteRule ^ %1 [R=301,L]
-
-    # 2. Se a página sem .php for solicitada, serve o arquivo .php correspondente
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME}\.php -f
-    RewriteRule ^(.+)$ $1.php [L,QSA]
-</IfModule>
-
-# ── Bloquear acesso a pastas internas via FilesMatch ────────
-<FilesMatch "(^\.env|config\.php|db\.php|\.git)">
-    <IfModule mod_authz_core.c>
-        Require all denied
-    </IfModule>
-    <IfModule !mod_authz_core.c>
-        Order deny,allow
-        Deny from all
-    </IfModule>
+# 2. Bloqueia acesso a arquivos sensíveis
+<FilesMatch "^\.env|^\.git|^\.htaccess|^CONFIG\.md|^db/|^logs/|^includes/">
+    Order allow,deny
+    Deny from all
 </FilesMatch>
 
-# ── Cabeçalhos de segurança ─────────────────────────────────
-<IfModule mod_headers.c>
-    Header always set X-Frame-Options "SAMEORIGIN"
-    Header always set X-Content-Type-Options "nosniff"
-    Header always set X-XSS-Protection "1; mode=block"
-    Header always set Referrer-Policy "strict-origin-when-cross-origin"
-    Header always set Permissions-Policy "geolocation=(), microphone=(self), camera=()"
+# 3. Bloqueia acesso direto a arquivos .sql e .log
+<FilesMatch "\.(sql|log|ini|sh|bak)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
 
-    # Remove headers que expõem info do servidor
-    Header unset X-Powered-By
-    Header always unset X-Powered-By
-</IfModule>
+# 4. Força HTTPS (Opcional - recomendado se o painel não fizer automático)
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# ── Cache de assets estáticos ───────────────────────────────
-<IfModule mod_expires.c>
-    ExpiresActive On
-    ExpiresByType image/jpeg        "access plus 1 month"
-    ExpiresByType image/png         "access plus 1 month"
-    ExpiresByType image/webp        "access plus 1 month"
-    ExpiresByType image/svg+xml     "access plus 1 month"
-    ExpiresByType audio/mpeg        "access plus 1 month"
-    ExpiresByType text/css          "access plus 1 week"
-    ExpiresByType application/javascript "access plus 1 week"
-    ExpiresByType font/woff2        "access plus 1 year"
-</IfModule>
-
-# ── Compressão GZIP ─────────────────────────────────────────
-<IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/css text/javascript
-    AddOutputFilterByType DEFLATE application/javascript application/json
-    AddOutputFilterByType DEFLATE image/svg+xml
-</IfModule>
-
-# ── Proteção extra: bloqueia user-agents maliciosos ─────────
-<IfModule mod_rewrite.c>
-    RewriteCond %{HTTP_USER_AGENT} (libwww-perl|wget|python|nikto|curl|scan|java|winhttp|clshttp|loader) [NC,OR]
-    RewriteCond %{HTTP_USER_AGENT} (%0A|%0D|%27|%3C|%3E|%00) [NC]
-    RewriteRule .* - [F,L]
-</IfModule>
-
-# ── Bloqueia acesso à pasta admin por IP (descomente e configure) ──
-# <Directory "admin">
-#     <RequireAll>
-#         Require ip 177.x.x.x
-#     </RequireAll>
-# </Directory>
+# 5. Configurações de Redirecionamento do Encurtador (/s/CODIGO)
+RewriteRule ^s/([a-zA-Z0-9]+)$ s/index.php?code=$1 [L,QSA]
