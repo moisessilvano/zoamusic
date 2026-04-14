@@ -23,24 +23,8 @@ if ($musica['status'] === 'concluido') {
 }
 
 if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($musica['letra'])) {
-    $worker_url = BASE_URL . 'api/gerar_musica.php?uid=' . urlencode($uid) . '&secret=' . urlencode(hash_hmac('sha256', $uid, ASAAS_API_KEY));
-    
-    $ch = curl_init($worker_url);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => false, 
-        CURLOPT_TIMEOUT_MS => 2000, // Aumentado para 2s para evitar deadlock local
-        CURLOPT_NOSIGNAL => true,
-        CURLOPT_SSL_VERIFYPEER => false, // Ignora erro de SSL em chamada local
-        CURLOPT_SSL_VERIFYHOST => false
-    ]);
-    
-    $success = curl_exec($ch);
-    if (!$success) {
-        logger("Erro ao disparar worker para [{$uid}]: " . curl_error($ch));
-    } else {
-        logger("Worker disparado com sucesso para [{$uid}].");
-    }
-    curl_close($ch);
+    // O disparo agora é feito de forma assíncrona pelo Javascript da tela (frontend).
+    // Isso evita o travamento de single-threads no (php -S) e não usa exec() que cPanel bloqueia.
 }
 ?>
 <!DOCTYPE html>
@@ -144,11 +128,11 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
                     <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2" style="border-color:#C9A84C;" id="step-claude-icon">
                         <div class="w-2 h-2 rounded-full animate-ping" style="background:#C9A84C;"></div>
                     </div>
-                    <span class="text-sm" style="color:#44403C;">IA escrevendo a letra da sua música...</span>
+                    <span class="text-sm" style="color:#44403C;">Escrevendo a letra da sua música...</span>
                 </div>
                 <div class="step-anim flex items-center gap-3" style="animation-delay:1.2s" id="step-suno">
                     <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2" style="border-color:#E8D9A8;" id="step-suno-icon"></div>
-                    <span class="text-sm" style="color:#B8A07A;" id="step-suno-text">IA compondo a melodia com voz...</span>
+                    <span class="text-sm" style="color:#B8A07A;" id="step-suno-text">Compondo a melodia com voz...</span>
                 </div>
                 <div class="step-anim flex items-center gap-3" style="animation-delay:1.7s" id="step-final">
                     <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2" style="border-color:#E8D9A8;" id="step-final-icon"></div>
@@ -170,6 +154,14 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
 
 <script>
 const uid = <?= json_encode($uid) ?>;
+const secret = <?= json_encode(hash_hmac('sha256', $uid, ASAAS_API_KEY)) ?>;
+const needsTrigger = <?= ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($musica['letra'])) ? 'true' : 'false' ?>;
+
+// Se o worker ainda não foi disparado, o JS dispara agora
+if (needsTrigger) {
+    fetch(`api/gerar_musica.php?uid=${encodeURIComponent(uid)}&secret=${encodeURIComponent(secret)}`, { keepalive: true }).catch(() => {});
+}
+
 const verses = [
     '"Crie em mim, ó Deus, um coração puro..." — Salmos 51:10',
     '"Cantai ao Senhor um cântico novo..." — Salmos 96:1',
@@ -185,48 +177,70 @@ setInterval(() => {
 
 function markDone(id) {
     const icon = document.getElementById(id + '-icon');
+    const text = document.getElementById(id + '-text');
     if (!icon) return;
     icon.style.borderColor = '#22c55e';
-    icon.style.background = '#22c55e';
+    icon.style.background  = '#22c55e';
     icon.innerHTML = '<span style="color:#fff;font-size:11px;font-weight:bold;">✓</span>';
+    if (text) text.style.color = '#44403C';
 }
-function markActive(id) {
+function markActive(id, label) {
     const icon = document.getElementById(id + '-icon');
+    const text = document.getElementById(id + '-text');
     if (!icon) return;
     icon.style.borderColor = '#C9A84C';
     icon.innerHTML = '<div style="width:8px;height:8px;border-radius:50%;background:#C9A84C;" class="animate-ping"></div>';
+    if (text) { text.style.color = '#44403C'; if (label) text.textContent = label; }
 }
 
-let pollCount = 0;
+let lastLetra = false;
+let lastTask  = false;
+
 async function checkStatus() {
-    pollCount++;
-    document.getElementById('status-msg').textContent = 'Verificando... (tentativa ' + pollCount + ')';
     try {
         const res  = await fetch('api/check_status.php?uid=' + encodeURIComponent(uid));
         const data = await res.json();
 
+        // Atualiza indicadores de passo
+        if (data.has_letra && !lastLetra) {
+            markDone('step-claude');
+            lastLetra = true;
+        }
+        if (data.has_task && !lastTask) {
+            markActive('step-suno', 'Compondo a melodia com voz...');
+            lastTask = true;
+        }
+
+        // Se tem task_id mas ainda não concluído: dispara poll do Suno em paralelo (fire-and-forget)
+        // Isso NÃO bloqueia esta função — é uma requisição independente de ~4s
+        if (data.has_task && data.status !== 'concluido') {
+            fetch('api/poll_suno.php?uid=' + encodeURIComponent(uid), { keepalive: true }).catch(() => {});
+        }
+
         if (data.status === 'concluido' && data.audio_url) {
-            markDone('step-claude'); markDone('step-suno'); markDone('step-final');
+            markDone('step-claude');
+            markDone('step-suno');
+            markDone('step-final');
             document.getElementById('status-msg').textContent = '✨ Música pronta! Redirecionando...';
             setTimeout(() => { window.location = 'ouvir.php?uid=' + encodeURIComponent(uid); }, 1500);
-            return;
+            return; // Para o polling
         }
+
         if (data.status === 'erro') {
-            document.getElementById('status-msg').textContent = '❌ Ocorreu um erro. Entre em contato.';
-            return;
+            document.getElementById('status-msg').textContent = '❌ Ocorreu um erro. Entre em contato com o suporte.';
+            return; // Para o polling
         }
-        if (data.has_letra) {
-            markDone('step-claude');
-            markActive('step-suno');
-            const t = document.getElementById('step-suno-text');
-            if (t) t.style.color = '#44403C';
-        }
-        setTimeout(checkStatus, 5000);
-    } catch(e) {
-        setTimeout(checkStatus, 5000);
-    }
+
+    } catch (e) { /* rede indisponível, tenta novamente */ }
+
+    setTimeout(checkStatus, 5000);
 }
+
+// Primeira verificação após 3s (dá tempo do worker iniciar)
 setTimeout(checkStatus, 3000);
 </script>
+
+<?php require_once __DIR__ . '/includes/mini_player.php'; ?>
 </body>
 </html>
+

@@ -10,12 +10,14 @@ $erro = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $inspiracao = trim($_POST['inspiracao'] ?? '');
+    $nome       = trim($_POST['nome'] ?? '');
+    $telefone   = preg_replace('/[^0-9+]/', '', trim($_POST['telefone'] ?? ''));
     if (strlen($inspiracao) < 10) {
         $erro = 'Por favor, compartilhe um pouco mais da sua história (mínimo 10 caracteres).';
     } else {
         $uid = uuid4();
-        db()->prepare('INSERT INTO musicas (id, inspiracao, status) VALUES (?, ?, ?)')
-            ->execute([$uid, $inspiracao, 'aguardando_pagamento']);
+        db()->prepare('INSERT INTO musicas (id, inspiracao, nome, telefone, status) VALUES (?, ?, ?, ?, ?)')
+            ->execute([$uid, $inspiracao, $nome ?: null, $telefone ?: null, 'aguardando_pagamento']);
         header('Location: checkout.php?uid=' . urlencode($uid));
         exit;
     }
@@ -311,6 +313,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <span id="audio-icon">🔇</span>
             <span id="audio-label" class="hidden md:inline">Ativar som</span>
         </button>
+        <button onclick="abrirHistorico()"
+            class="hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all"
+            style="background:rgba(201,168,76,0.06); border:1px solid rgba(201,168,76,0.2); color:#8B6914;"
+            title="Minhas músicas">
+            🎵 Minhas músicas
+        </button>
         <a href="#criar"
            class="hidden md:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white btn-gold">
             ✦ Criar minha música
@@ -499,8 +507,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="relative">
                     <textarea
                         name="inspiracao"
-                        rows="7"
-                        placeholder="Ex: Estou passando por um momento difícil, mas o Salmo 23 me sustenta. Quero uma música que fale da paz de Deus mesmo na tempestade..."
+                        rows="6"
+                        placeholder="Ex: Estou passando por um momento difícil, mas o Salmo 23 me sustenta..."
                         class="textarea-angel w-full rounded-2xl px-6 py-5 text-base leading-relaxed"
                         required minlength="10"
                     ><?= htmlspecialchars($_POST['inspiracao'] ?? '') ?></textarea>
@@ -512,11 +520,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <p class="text-xs font-semibold mb-2.5" style="color:#8B7355">Sugestões de tema:</p>
                     <div class="flex flex-wrap gap-2">
                         <?php foreach (['Cura e restauração','Gratidão a Deus','Casamento e amor','Luto e consolo','Novo emprego','Batismo','Aniversário'] as $tag): ?>
-                        <button type="button" onclick="aplicarTag(this)"
-                            class="tag-pill px-3 py-1.5 rounded-full text-xs font-medium">
+                        <button type="button" onclick="aplicarTag(this)" class="tag-pill px-3 py-1.5 rounded-full text-xs font-medium">
                             <?= $tag ?>
                         </button>
                         <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Nome e Telefone SMS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5" style="color:#8B7355">
+                            👤 Seu nome
+                            <span style="color:#B8A07A; font-weight:400;">(opcional)</span>
+                        </label>
+                        <input type="text" name="nome"
+                            value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>"
+                            placeholder="Como quer ser chamado?"
+                            style="width:100%; border-radius:14px; padding:14px 20px; font-size:15px;
+                                   background:#FDFBF5; border:1.5px solid #E8D9A8; color:#1C1917;
+                                   outline:none; box-sizing:border-box; transition:border-color .2s;"
+                            onfocus="this.style.borderColor='#C9A84C'"
+                            onblur="this.style.borderColor='#E8D9A8'">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5" style="color:#8B7355">
+                            📱 Receber SMS quando a música ficar pronta
+                            <span style="color:#B8A07A; font-weight:400;">(opcional)</span>
+                        </label>
+                        <input type="tel" name="telefone"
+                            value="<?= htmlspecialchars($_POST['telefone'] ?? '') ?>"
+                            placeholder="(11) 9 0000-0000"
+                            style="width:100%; border-radius:14px; padding:14px 20px; font-size:15px;
+                                   background:#FDFBF5; border:1.5px solid #E8D9A8; color:#1C1917;
+                                   outline:none; box-sizing:border-box; transition:border-color .2s;"
+                            onfocus="this.style.borderColor='#C9A84C'"
+                            onblur="this.style.borderColor='#E8D9A8'">
                     </div>
                 </div>
 
@@ -856,6 +895,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     audio.onplay = updateUI;
     audio.onpause = updateUI;
     audio.onvolumechange = updateUI;
+
+    // ── Histórico de músicas ──
+    window.abrirHistorico = function() {
+        document.getElementById('historico-modal').style.display = 'flex';
+        renderHistorico();
+    };
+    window.fecharHistorico = function() {
+        document.getElementById('historico-modal').style.display = 'none';
+    };
+    function renderHistorico() {
+        const list = document.getElementById('historico-list');
+        let hist = [];
+        try { hist = JSON.parse(localStorage.getItem('louvor_historico') || '[]'); } catch(e) {}
+        if (!hist.length) {
+            list.innerHTML = '<p style="text-align:center;color:#B8A07A;padding:32px 0;font-size:14px;">Você ainda não criou nenhuma música neste dispositivo.</p>';
+            return;
+        }
+        list.innerHTML = hist.slice().reverse().map(m =>
+            `<a href="ouvir.php?uid=${encodeURIComponent(m.uid)}" style="display:flex;align-items:center;
+              gap:12px;padding:14px 0;border-bottom:1px solid #F0E8CC;text-decoration:none;">
+              <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#C9A84C,#E8CC80);
+                          display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;flex-shrink:0;">🎵</div>
+              <div style="flex:1;min-width:0;">
+                <p style="font-weight:600;color:#1C1917;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px;">${m.titulo||'Minha música'}</p>
+                <p style="font-size:11px;color:#A08060;margin:4px 0 0;">${m.data||''}</p>
+              </div>
+              <span style="color:#C9A84C;font-size:20px;">›</span>
+            </a>`
+        ).join('');
+    }
 </script>
+
+<!-- Modal Histórico -->
+<div id="historico-modal" style="display:none;position:fixed;inset:0;z-index:200;
+     background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;"
+     onclick="if(event.target===this)fecharHistorico()">
+    <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;
+                padding:28px 24px;max-height:80vh;overflow-y:auto;
+                box-shadow:0 -8px 40px rgba(0,0,0,0.15);" onclick="event.stopPropagation()">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h3 style="font-size:18px;font-weight:700;color:#1C1917;margin:0;">🎵 Minhas músicas</h3>
+            <button onclick="fecharHistorico()" style="border:none;background:#F0E8CC;border-radius:50%;
+                    width:30px;height:30px;cursor:pointer;font-size:14px;color:#8B6914;">✕</button>
+        </div>
+        <p style="font-size:12px;color:#B8A07A;margin-bottom:16px;">Músicas criadas neste dispositivo.</p>
+        <div id="historico-list"></div>
+    </div>
+</div>
 </body>
 </html>

@@ -5,6 +5,7 @@
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/includes/shortlink.php';
 
 $uid = trim($_GET['uid'] ?? '');
 
@@ -62,7 +63,15 @@ function formatar_letra(string $letra): string {
     return $html;
 }
 
-$share_url    = BASE_URL . '/ouvir.php?uid=' . urlencode($uid);
+$long_url = rtrim(BASE_URL, '/') . '/ouvir.php?uid=' . urlencode($uid);
+if (!empty($musica['short_code'])) {
+    $share_url = shortlink_url($musica['short_code']);
+} else {
+    $code = shortlink_criar($long_url, $uid);
+    db()->prepare('UPDATE musicas SET short_code = ? WHERE id = ?')->execute([$code, $uid]);
+    $share_url = shortlink_url($code);
+}
+
 $whatsapp_msg = urlencode('🎵 Ouça a música cristã que a LOUVOR.NET criou pra mim: ' . $share_url);
 $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
 ?>
@@ -255,7 +264,26 @@ function copiarLink(e) {
         btn.textContent = '✓ Copiado!';
         setTimeout(() => btn.textContent = orig, 2500);
     });
-}
+// Salva esta música no histórico de músicas do dispositivo
+try {
+    const uid   = <?= json_encode($uid) ?>;
+    const titulo = <?= json_encode($musica['titulo'] ?? 'Minha Música') ?>;
+    const data   = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+    let hist = JSON.parse(localStorage.getItem('louvor_historico') || '[]');
+    hist = hist.filter(m => m.uid !== uid); // remove duplicata
+    hist.push({ uid, titulo, data });
+    if (hist.length > 20) hist = hist.slice(-20); // máx 20
+    localStorage.setItem('louvor_historico', JSON.stringify(hist));
+} catch(e) {}
+
+// Para e esconde o mini-player (usuário ouve a própria música aqui)
+try {
+    const mp = document.getElementById('mp-audio');
+    if (mp) { mp.pause(); mp.src = ''; }
+    const mpEl = document.getElementById('mini-player');
+    if (mpEl) mpEl.style.display = 'none';
+    sessionStorage.removeItem('louvor_mini_player');
+} catch(e) {}
 </script>
 </body>
 </html>

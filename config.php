@@ -47,6 +47,10 @@ define('ASAAS_PROD_URL',   env('ASAAS_PROD_URL', 'https://api.asaas.com/api/v3')
 define('SUNO_API_KEY', env('SUNO_API_KEY'));
 define('SUNO_API_URL', env('SUNO_API_URL'));
 
+// --- Zenvia (SMS) ---
+define('ZENVIA_TOKEN', env('ZENVIA_TOKEN'));
+define('ZENVIA_FROM',  env('ZENVIA_FROM', 'LOUVORNET'));
+
 // --- App ---
 define('BASE_URL',           env('BASE_URL', 'http://localhost'));
 define('MUSICA_PRICE',       (float) env('MUSICA_PRICE', '19.90'));

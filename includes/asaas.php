@@ -9,12 +9,13 @@ require_once __DIR__ . '/../config.php';
  * Cria ou busca o cliente padrão na Asaas (CPF genérico para PoC).
  * Em produção, colete CPF/nome real do usuário.
  *
+ * @param string|null $nome Nome do cliente
  * @return string customer_id da Asaas
  */
-function asaas_obter_customer(): string {
+function asaas_obter_customer(?string $nome = null): string {
     // Para o PoC usamos um cliente fixo. Em produção, crie/busque por CPF.
     $payload = [
-        'name'  => 'Cliente LOUVOR.NET',
+        'name'  => $nome ? trim($nome) : 'Cliente LOUVOR.NET',
         'email' => 'cliente@louvor.net',
         'cpfCnpj' => '24971563792', // CPF fictício válido para sandbox
     ];
@@ -31,7 +32,12 @@ function asaas_obter_customer(): string {
  * @return array{asaas_id: string, pix_key: string, qr_code_image: string}
  */
 function asaas_criar_pix(string $musica_uuid): array {
-    $customer_id = asaas_obter_customer();
+    // Busca nome no DB se existir
+    $stmt = db()->prepare('SELECT nome FROM musicas WHERE id = ?');
+    $stmt->execute([$musica_uuid]);
+    $nome = $stmt->fetchColumn();
+
+    $customer_id = asaas_obter_customer($nome ?: null);
 
     $due_date = date('Y-m-d', strtotime('+1 day'));
 

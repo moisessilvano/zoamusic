@@ -1,7 +1,8 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Worker: Geração de Letra + Áudio (Background)
-// Chamado via fire-and-forget pela processando.php
+// LOUVOR.NET - Worker: Geração de Letra + Submissão Suno
+// Responsabilidade: Claude (letra) + Suno submit (task_id).
+// NÃO faz polling — o frontend chama poll_suno.php para isso.
 // ============================================================
 
 require_once __DIR__ . '/../config.php';
@@ -9,44 +10,38 @@ require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../includes/claude.php';
 require_once __DIR__ . '/../includes/suno.php';
 
-// Fecha a conexão HTTP para liberar o cliente imediatamente (non-blocking)
+// Libera a conexão HTTP para o browser imediatamente
 if (function_exists('fastcgi_finish_request')) {
     fastcgi_finish_request();
 } else {
-    // Para PHP-FPM ou Apache mod_php
     header('Connection: close');
     header('Content-Length: 0');
     ob_end_flush();
     flush();
 }
 
-// Aumenta o tempo máximo de execução para este worker
-set_time_limit(300);
+set_time_limit(120); // Claude + Suno submit: máx 2 min
+ignore_user_abort(true);
 
-// Valida a requisição
+// Valida
 $uid    = trim($_GET['uid'] ?? '');
 $secret = trim($_GET['secret'] ?? '');
-$expected = hash_hmac('sha256', $uid, ASAAS_API_KEY);
-
-if (!hash_equals($expected, $secret)) {
-    exit; // Segurança: apenas chamadas internas
+if (!hash_equals(hash_hmac('sha256', $uid, ASAAS_API_KEY), $secret)) {
+    exit;
 }
 
 logger("Worker: Iniciado", $uid);
 
-// Busca a música
 $stmt = db()->prepare('SELECT * FROM musicas WHERE id = ? AND status = ?');
 $stmt->execute([$uid, 'processando']);
 $musica = $stmt->fetch();
 
 if (!$musica || !empty($musica['task_id'])) {
-    logger("Worker ignorado para [{$uid}]: música não existe ou task_id já presente.");
-    exit; // Não existe ou já foi iniciada
+    logger("Worker ignorado [{$uid}]: já em andamento ou inexistente.");
+    exit;
 }
 
 try {
-    logger("Worker iniciado para [{$uid}].");
-
     // ETAPA 1: Claude gera a letra
     logger("Worker [{$uid}]: Solicitando letra ao Claude...");
     $resultado = claude_gerar_letra($musica['inspiracao']);
@@ -54,53 +49,23 @@ try {
     $letra  = $resultado['letra'];
     $vocal  = $resultado['vocal'] ?? 'male vocalist';
 
-    // Salva letra no banco
     $stmt = db()->prepare('UPDATE musicas SET titulo = ?, letra = ? WHERE id = ?');
     $stmt->execute([$titulo, $letra, $uid]);
-    logger("Worker: Letra gerada e salva: {$titulo} (Voz: {$vocal})", $uid);
+    logger("Worker [{$uid}]: Letra salva: {$titulo} (voz: {$vocal})");
 
-    // ETAPA 2: PiAPI (Udio) gera o áudio
-    logger("Worker: Solicitando áudio ao Suno (Direto)...", $uid);
+
+    // ETAPA 2: Submete o job ao Suno (não aguarda conclusão)
+    logger("Worker [{$uid}]: Submetendo job ao Suno...");
     $task_id = suno_gerar_audio($titulo, $letra, $vocal, $uid);
 
-    // Salva task_id no banco
     $stmt = db()->prepare('UPDATE musicas SET task_id = ? WHERE id = ?');
     $stmt->execute([$task_id, $uid]);
-    logger("Worker [{$uid}]: Task PiAPI criada: {$task_id}");
-
-    // ETAPA 3: Polling do áudio (até 5 minutos)
-    $max_attempts = 60; // 60 × 5s = 5 minutos
-    logger("Worker [{$uid}]: Iniciando polling do áudio...");
-    for ($attempt = 0; $attempt < $max_attempts; $attempt++) {
-        sleep(5);
-
-        $status = suno_verificar_status($task_id, $uid);
-
-        if ($status['status'] === 'concluido' && $status['audio_url']) {
-            $stmt = db()->prepare(
-                "UPDATE musicas SET audio_url = ?, status = 'concluido' WHERE id = ?"
-            );
-            $stmt->execute([$status['audio_url'], $uid]);
-            logger("Worker [{$uid}]: Áudio concluído com sucesso! URL: {$status['audio_url']}");
-            break;
-        }
-
-        if ($status['status'] === 'erro') {
-            $stmt = db()->prepare("UPDATE musicas SET status = 'erro' WHERE id = ?");
-            $stmt->execute([$uid]);
-            logger("Worker [{$uid}]: PiAPI retornou erro na geração.");
-            break;
-        }
-
-        if ($attempt === $max_attempts - 1) {
-            logger("Worker [{$uid}]: Timeout atingido após 5 minutos de espera.");
-        }
-    }
+    logger("Worker [{$uid}]: Suno task_id salvo: {$task_id}. Worker encerrado — polling delegado ao frontend.");
 
 } catch (RuntimeException $e) {
-    // Loga o erro e marca como falha
     logger("Worker [{$uid}] ERRO: " . $e->getMessage());
-    error_log('LOUVOR.NET Worker Error [' . $uid . ']: ' . $e->getMessage());
+    error_log("LOUVOR.NET Worker [{$uid}]: " . $e->getMessage());
     $stmt = db()->prepare("UPDATE musicas SET status = 'erro' WHERE id = ?");
     $stmt->execute([$uid]);
 }
+

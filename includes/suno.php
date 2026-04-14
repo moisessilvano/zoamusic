@@ -60,16 +60,16 @@ function suno_gerar_audio(string $titulo, string $letra, string $vocal_type = 'm
 
 /**
  * Verifica o status da geração por taskId.
+ * @param int $timeout Timeout cURL em segundos (use curto para não bloquear o servidor)
  */
-function suno_verificar_status(string $task_id, ?string $uid = null): array {
-    // Busca detalhes da task no endpoint correto
+function suno_verificar_status(string $task_id, ?string $uid = null, int $timeout = 15): array {
     $ch = curl_init(SUNO_API_URL . '/generate/record-info?taskId=' . urlencode($task_id));
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPHEADER     => [
             'Authorization: Bearer ' . SUNO_API_KEY,
         ],
-        CURLOPT_TIMEOUT => 15,
+        CURLOPT_TIMEOUT => $timeout,
     ]);
 
     $response = curl_exec($ch);
@@ -87,15 +87,27 @@ function suno_verificar_status(string $task_id, ?string $uid = null): array {
     $status_str = strtoupper($task_data['status'] ?? 'PENDING');
 
     if ($status_str === 'SUCCESS') {
-        // Tenta pegar a URL direta ou dentro da lista de clips
-        if (!empty($task_data['audioUrl'])) {
-            return ['status' => 'concluido', 'audio_url' => $task_data['audioUrl']];
+        // Tenta pegar a URL direta
+        $direct_url = $task_data['audioUrl'] ?? $task_data['streamAudioUrl'] ?? '';
+        if (!empty($direct_url)) {
+            return ['status' => 'concluido', 'audio_url' => $direct_url];
         }
 
+        // Tenta na nova estrutura response -> sunoData
+        $sunoData = $task_data['response']['sunoData'] ?? $task_data['sunoData'] ?? [];
+        foreach ($sunoData as $clip) {
+            $clip_url = $clip['audioUrl'] ?? $clip['streamAudioUrl'] ?? '';
+            if (!empty($clip_url)) {
+                return ['status' => 'concluido', 'audio_url' => $clip_url];
+            }
+        }
+
+        // Fallback antigo para clips
         $clips = $task_data['clips'] ?? [];
         foreach ($clips as $clip) {
-            if (!empty($clip['audioUrl'])) {
-                return ['status' => 'concluido', 'audio_url' => $clip['audioUrl']];
+            $clip_url = $clip['audioUrl'] ?? $clip['streamAudioUrl'] ?? '';
+            if (!empty($clip_url)) {
+                return ['status' => 'concluido', 'audio_url' => $clip_url];
             }
         }
     }

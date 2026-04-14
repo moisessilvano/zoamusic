@@ -23,6 +23,9 @@ ServerSignature Off
     RewriteRule ^includes/               - [F,L]
     RewriteRule ^logs/                   - [F,L]
 
+    # --- Links curtos: /s/CODIGO → s/index.php?code=CODIGO ---
+    RewriteRule ^s/([a-zA-Z0-9]{3,12})/?$ s/index.php?code=$1 [L,QSA]
+
     # --- Remover .php da URL (clean URLs) ---
     # 1. Redireciona de /página.php para /página (APENAS SE NÃO FOR POST)
     RewriteCond %{REQUEST_METHOD} !POST

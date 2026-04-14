@@ -239,5 +239,8 @@ function copiarPix() {
     });
 }
 </script>
+
+<?php require_once __DIR__ . '/includes/mini_player.php'; ?>
 </body>
 </html>
+
