@@ -73,7 +73,8 @@ define('CF_TURNSTILE_SITE_KEY',   env('CF_TURNSTILE_SITE_KEY', ''));
 define('CF_TURNSTILE_SECRET_KEY', env('CF_TURNSTILE_SECRET_KEY', ''));
 
 // --- Trava de Segurança: Apenas IPs do Brasil no Admin ---
-if (str_contains($_SERVER['REQUEST_URI'], '/portal-adoracao/')) {
+$request_uri = $_SERVER['REQUEST_URI'] ?? '';
+if (str_contains($request_uri, '/portal-adoracao/')) {
     $country = $_SERVER['HTTP_CF_IPCOUNTRY'] ?? '';
     
     // Se não for BR e não for ambiente de desenvolvimento local (vazio ou XX)

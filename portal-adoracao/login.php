@@ -49,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = trim($_POST['email'] ?? '');
         $senha = $_POST['senha'] ?? '';
         $turnstile_token = $_POST['cf-turnstile-response'] ?? '';
+        $verificado = true;
 
         // VERIFICAÇÃO CLOUDFLARE TURNSTILE (Opcional se configurado no .env)
         if (!empty(CF_TURNSTILE_SECRET_KEY)) {
@@ -65,35 +66,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (!$res['success']) {
                 $erro = 'Falha na verificação de segurança (Bot detectado).';
-                goto fim_post;
+                $verificado = false;
             }
         }
         
-        $stmt = db()->prepare('SELECT id, nome, email, senha_hash FROM admin_users WHERE email = ?');
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+        if ($verificado) {
+            $stmt = db()->prepare('SELECT id, nome, email, senha_hash FROM admin_users WHERE email = ?');
+            $stmt->execute([$email]);
+            $user = $stmt->fetch();
 
-        if ($user && password_verify($senha, $user['senha_hash'])) {
-            // LOGIN CORRETO - APLICAR MACETE
-            $_SESSION['login_knocks']++;
-            
-            if ($_SESSION['login_knocks'] < 3) {
-                // Erro falso nas 2 primeiras vezes (mesmo com senha correta)
-                $erro = 'E-mail ou senha incorretos.';
-                logger("Login [Macete {$_SESSION['login_knocks']}]: Tentativa correta bloqueada propositalmente.");
+            if ($user && password_verify($senha, $user['senha_hash'])) {
+                // LOGIN CORRETO - APLICAR MACETE
+                $_SESSION['login_knocks']++;
+                
+                if ($_SESSION['login_knocks'] < 3) {
+                    // Erro falso nas 2 primeiras vezes
+                    $erro = 'E-mail ou senha incorretos.';
+                    logger("Login [Macete {$_SESSION['login_knocks']}]: Tentativa correta bloqueada.");
+                } else {
+                    // SUCESSO na 3ª vez
+                    $_SESSION['login_knocks'] = 0;
+                    $_SESSION['admin_partial_id']    = $user['id'];
+                    $_SESSION['admin_partial_email'] = $user['email'];
+                    $_SESSION['admin_partial_nome']  = $user['nome'];
+                    header('Location: login.php');
+                    exit;
+                }
             } else {
-                // SUCESSO na 3ª vez
-                $_SESSION['login_knocks'] = 0; // Reseta
-                $_SESSION['admin_partial_id']    = $user['id'];
-                $_SESSION['admin_partial_email'] = $user['email'];
-                $_SESSION['admin_partial_nome']  = $user['nome'];
-                header('Location: login.php');
-                exit;
+                $_SESSION['login_knocks']++;
+                $erro = 'E-mail ou senha incorretos.';
             }
-        } else {
-            // Senha errada também conta como tentativa para não dar pista
-            $_SESSION['login_knocks']++;
-            $erro = 'E-mail ou senha incorretos.';
         }
     } 
     elseif ($action === 'verify_2fa' && $step >= 2) {
@@ -126,7 +128,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
-fim_post:
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
