@@ -27,52 +27,31 @@ if ($musica['status'] === 'processando') {
     header('Location: processando.php?uid=' . urlencode($uid)); exit;
 }
 
-$pix_gerado = !empty($musica['asaas_id']) && !empty($musica['qr_code_img']);
 $pix_error  = '';
 
-if (!$pix_gerado) {
-    try {
-        $success = false;
-        // Tenta recuperar se já existir um ID
-        if (!empty($musica['asaas_id'])) {
-            try {
-                $pix_data = asaas_request('GET', "/payments/{$musica['asaas_id']}/pixQrCode");
-                if (!empty($pix_data['encodedImage'])) {
-                    $qr_image = $pix_data['encodedImage'];
-                    $pix_key  = $pix_data['payload'] ?? '';
-                    
-                    db()->prepare('UPDATE musicas SET pix_key=?, qr_code_img=? WHERE id=?')
-                        ->execute([$pix_key, $qr_image, $uid]);
-                    
-                    $musica['pix_key']     = $pix_key;
-                    $musica['qr_code_img'] = $qr_image;
-                    $success = true;
-                    logger("Checkout [{$uid}]: QR Code recuperado com sucesso.");
-                }
-            } catch (Exception $e) {
-                logger("Checkout [{$uid}]: Falha ao recuperar QR Code antigo ({$e->getMessage()}). Tentando gerar novo.");
-            }
-        }
-
-        // Se não tinha ID ou se a recuperação falhou, gera uma NOVA cobrança
-        if (!$success) {
-            $pix = asaas_criar_pix($uid);
-            db()->prepare('UPDATE musicas SET asaas_id=?, pix_key=?, qr_code_img=? WHERE id=?')
-                ->execute([$pix['asaas_id'], $pix['pix_key'], $pix['qr_code_image'], $uid]);
+// --- Processa o envio do CPF ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cpf'])) {
+    $cpf = preg_replace('/\D/', '', $_POST['cpf']);
+    if (strlen($cpf) !== 11 && strlen($cpf) !== 14) {
+        $pix_error = 'Por favor, informe um CPF ou CNPJ válido.';
+    } else {
+        try {
+            $pix = asaas_criar_pix($uid, $cpf);
+            db()->prepare('UPDATE musicas SET cpf=?, asaas_id=?, pix_key=?, qr_code_img=? WHERE id=?')
+                ->execute([$cpf, $pix['asaas_id'], $pix['pix_key'], $pix['qr_code_image'], $uid]);
+            
+            // Recarrega dados da música
+            $musica['cpf'] = $cpf;
             $musica['asaas_id']    = $pix['asaas_id'];
             $musica['pix_key']     = $pix['pix_key'];
             $musica['qr_code_img'] = $pix['qr_code_image'];
-            logger("Checkout [{$uid}]: Nova cobrança gerada.");
-        }
-        $pix_gerado = true;
-    } catch (Exception $e) {
-        $pix_error = $e->getMessage();
-        logger("Checkout [{$uid}] ERRO FATAL: " . $pix_error);
-        if (empty($musica['pix_key'])) {
-            $musica['pix_key'] = '00020126580014br.gov.bcb.pix0136' . $uid . '5204000053039865802BR5925LOUVOR NET6009SAO PAULO62070503***6304';
+        } catch (Exception $e) {
+            $pix_error = 'Erro na API: ' . $e->getMessage();
         }
     }
 }
+
+$pix_gerado = !empty($musica['asaas_id']) && !empty($musica['qr_code_img']);
 
 $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
 ?>
@@ -211,61 +190,99 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
         </div>
     </div>
 
-    <!-- QR CODE -->
-    <div class="card rounded-2xl p-6 mb-5 text-center" style="border:2px solid #E8D9A8;">
-        <p class="font-semibold text-sm mb-5" style="color:#1C1917;">Escaneie o QR Code com seu banco</p>
-
-        <?php if (!empty($musica['qr_code_img'])): ?>
-            <img src="data:image/png;base64,<?= htmlspecialchars($musica['qr_code_img']) ?>"
-                 alt="QR Code PIX" class="w-48 h-48 mx-auto mb-5 rounded-xl shadow-sm">
-        <?php else: ?>
-            <div class="w-48 h-48 mx-auto mb-5 rounded-xl flex items-center justify-center"
-                 style="background:#FBF6E9; border:2px dashed #E8D9A8;">
-                <div class="text-center">
-                    <span class="text-4xl">📱</span>
-                    <p class="text-xs mt-2" style="color:#B8A07A;">QR Code PIX</p>
-                </div>
+    <?php if (!$pix_gerado): ?>
+        <!-- FORMULÁRIO DE CPF -->
+        <div class="card rounded-3xl p-8 mb-8 text-center border-2" style="border-color:#C9A84C;">
+            <div class="w-16 h-16 bg-[#FDFBF5] rounded-full flex items-center justify-center mx-auto mb-4 border border-[#E8D9A8]">
+                <span class="text-2xl">🔐</span>
             </div>
-        <?php endif; ?>
-
-        <p class="text-sm mb-3" style="color:#6B5B3E;">Ou use o <strong style="color:#1C1917;">Pix Copia e Cola</strong>:</p>
-        <div class="pix-code rounded-xl px-4 py-3 text-left mb-3 max-h-20 overflow-y-auto"
-             style="background:#FDFBF5; border:1px solid #E8D9A8; color:#5C4A2A;" id="pix-code">
-            <?= htmlspecialchars($musica['pix_key'] ?? '') ?>
+            <h2 class="text-lg font-bold mb-2">Quase lá!</h2>
+            <p class="text-sm text-[#6B5B3E] mb-6">Para gerar seu QR Code de pagamento, precisamos do seu CPF ou CNPJ conforme exigido pelo Banco Central.</p>
+            
+            <form method="POST" class="space-y-4">
+                <div class="text-left">
+                    <label class="block text-xs font-bold uppercase tracking-wide text-[#8B7355] mb-1.5 ml-1">CPF ou CNPJ</label>
+                    <input type="tel" name="cpf" id="input-cpf" required placeholder="000.000.000-00"
+                        class="w-full bg-[#FDFBF5] border-2 border-[#E8D9A8] rounded-2xl px-5 py-4 text-lg font-semibold focus:border-[#C9A84C] outline-none transition-all">
+                </div>
+                <button type="submit" class="btn-gold w-full py-5 rounded-2xl text-white font-bold text-lg shadow-xl">
+                    GERAR PIX AGORA
+                </button>
+            </form>
+            
+            <div class="mt-6 flex items-center justify-center gap-4 grayscale opacity-60">
+                <img src="https://logodownload.org/wp-content/uploads/2020/02/pix-bc-logo.png" alt="Pix" class="h-4">
+                <div class="h-4 w-px bg-slate-300"></div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Ambiente 100% Seguro</p>
+            </div>
         </div>
-        <button onclick="copiarPix()" id="btn-copy"
-            class="w-full py-3 rounded-xl font-semibold text-sm transition-all"
-            style="border:1.5px solid #C9A84C; color:#8B6914; background:transparent;">
-            📋 Copiar código PIX
-        </button>
-    </div>
 
-    <!-- INSTRUÇÕES -->
-    <div class="rounded-2xl p-5 mb-8" style="background:#fff; border:1px solid #F0E8CC;">
-        <p class="font-semibold text-sm mb-3" style="color:#1C1917;">Como pagar:</p>
-        <ol class="space-y-2 text-sm" style="color:#6B5B3E;">
-            <?php foreach ([
-                'Abra o app do seu banco',
-                'Escolha pagar via PIX',
-                'Escaneie o QR Code ou cole o código',
-                'Confirme o valor R$ ' . number_format(MUSICA_PRICE,2,',','.') . ' e pague',
-                'Clique em "Já Paguei" abaixo',
-            ] as $i => $passo): ?>
-            <li class="flex gap-2.5 items-start">
-                <span class="font-bold flex-shrink-0" style="color:#C9A84C;"><?= $i+1 ?>.</span>
-                <?= $passo ?>
-            </li>
-            <?php endforeach; ?>
-        </ol>
-    </div>
+        <script>
+            // Máscara de CPF/CNPJ
+            const cpfInput = document.getElementById('input-cpf');
+            cpfInput.addEventListener('input', (e) => {
+                let v = e.target.value.replace(/\D/g, "");
+                if (v.length <= 11) {
+                    v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                    v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                    v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                } else {
+                    v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+                    v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+                    v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+                    v = v.replace(/(\d{4})(\d)/, "$1-$2");
+                }
+                e.target.value = v;
+            });
+        </script>
 
-    <!-- BOTÃO JÁ PAGUEI -->
-    <form method="POST" action="confirmar_pagamento.php">
-        <input type="hidden" name="uid" value="<?= htmlspecialchars($uid) ?>">
-        <button type="submit" class="pulse-gold btn-gold w-full py-5 rounded-2xl text-white font-bold text-xl tracking-wide">
-            ✅ JÁ PAGUEI — CRIAR MINHA MÚSICA
-        </button>
-    </form>
+    <?php else: ?>
+        <!-- QR CODE (Já gerado) -->
+        <div class="card rounded-2xl p-6 mb-5 text-center" style="border:2px solid #E8D9A8;">
+            <p class="font-semibold text-sm mb-5" style="color:#1C1917;">Escaneie o QR Code com seu banco</p>
+
+            <img src="data:image/png;base64,<?= htmlspecialchars($musica['qr_code_img']) ?>"
+                 alt="QR Code PIX" class="w-48 h-48 mx-auto mb-5 rounded-xl shadow-sm border-4 border-white">
+
+            <p class="text-sm mb-3" style="color:#6B5B3E;">Ou use o <strong style="color:#1C1917;">Pix Copia e Cola</strong>:</p>
+            <div class="pix-code rounded-xl px-4 py-3 text-left mb-3 max-h-20 overflow-y-auto"
+                 style="background:#FDFBF5; border:1px solid #E8D9A8; color:#5C4A2A;" id="pix-code">
+                <?= htmlspecialchars($musica['pix_key'] ?? '') ?>
+            </div>
+            <button onclick="copiarPix()" id="btn-copy"
+                class="w-full py-3 rounded-xl font-semibold text-sm transition-all"
+                style="border:1.5px solid #C9A84C; color:#8B6914; background:transparent;">
+                📋 Copiar código PIX
+            </button>
+        </div>
+
+        <!-- INSTRUÇÕES -->
+        <div class="rounded-2xl p-5 mb-8" style="background:#fff; border:1px solid #F0E8CC;">
+            <p class="font-semibold text-sm mb-3" style="color:#1C1917;">Como pagar:</p>
+            <ol class="space-y-2 text-sm" style="color:#6B5B3E;">
+                <?php foreach ([
+                    'Abra o app do seu banco',
+                    'Escolha pagar via PIX',
+                    'Escaneie o QR Code ou cole o código',
+                    'Confirme o valor R$ ' . number_format(MUSICA_PRICE,2,',','.') . ' e pague',
+                    'Clique em "Já Paguei" abaixo',
+                ] as $i => $passo): ?>
+                <li class="flex gap-2.5 items-start">
+                    <span class="font-bold flex-shrink-0" style="color:#C9A84C;"><?= $i+1 ?>.</span>
+                    <?= $passo ?>
+                </li>
+                <?php endforeach; ?>
+            </ol>
+        </div>
+
+        <!-- BOTÃO JÁ PAGUEI -->
+        <form method="POST" action="confirmar_pagamento.php">
+            <input type="hidden" name="uid" value="<?= htmlspecialchars($uid) ?>">
+            <button type="submit" class="pulse-gold btn-gold w-full py-5 rounded-2xl text-white font-bold text-xl tracking-wide">
+                ✅ JÁ PAGUEI — CRIAR MINHA MÚSICA
+            </button>
+        </form>
+    <?php endif; ?>
     <p class="text-center text-xs mt-4" style="color:#B8A07A;">
         Após confirmar, a LOUVOR.NET irá compor sua música exclusiva em minutos.
     </p>

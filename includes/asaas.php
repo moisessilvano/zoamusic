@@ -12,12 +12,11 @@ require_once __DIR__ . '/../config.php';
  * @param string|null $nome Nome do cliente
  * @return string customer_id da Asaas
  */
-function asaas_obter_customer(?string $nome = null): string {
-    // Para o PoC usamos um cliente fixo. Em produção, crie/busque por CPF.
+function asaas_obter_customer(string $cpf, ?string $nome = null): string {
     $payload = [
         'name'  => $nome ? trim($nome) : 'Cliente LOUVOR.NET',
         'email' => 'cliente@louvor.net',
-        'cpfCnpj' => '24971563792', // CPF fictício válido para sandbox
+        'cpfCnpj' => preg_replace('/\D/', '', $cpf),
     ];
 
     $response = asaas_request('POST', '/customers', $payload);
@@ -29,15 +28,16 @@ function asaas_obter_customer(?string $nome = null): string {
  * Cria uma cobrança PIX na Asaas e retorna os dados de pagamento.
  *
  * @param string $musica_uuid UUID da música (usado como referência)
+ * @param string $cpf CPF do pagador
  * @return array{asaas_id: string, pix_key: string, qr_code_image: string}
  */
-function asaas_criar_pix(string $musica_uuid): array {
+function asaas_criar_pix(string $musica_uuid, string $cpf): array {
     // Busca nome no DB se existir
     $stmt = db()->prepare('SELECT nome FROM musicas WHERE id = ?');
     $stmt->execute([$musica_uuid]);
     $nome = $stmt->fetchColumn();
 
-    $customer_id = asaas_obter_customer($nome ?: null);
+    $customer_id = asaas_obter_customer($cpf, $nome ?: null);
 
     $due_date = date('Y-m-d', strtotime('+1 day'));
 

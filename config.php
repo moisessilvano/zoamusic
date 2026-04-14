@@ -49,6 +49,7 @@ define('ASAAS_API_KEY',    env('ASAAS_API_KEY'));
 define('ASAAS_ENV',        env('ASAAS_ENV', 'sandbox'));
 define('ASAAS_SANDBOX_URL', env('ASAAS_SANDBOX_URL', 'https://api-sandbox.asaas.com/v3'));
 define('ASAAS_PROD_URL',   env('ASAAS_PROD_URL', 'https://api.asaas.com/api/v3'));
+define('ASAAS_CUSTOMER_CPF', env('ASAAS_CUSTOMER_CPF', ''));
 
 // --- Suno Direto ---
 define('SUNO_API_KEY', env('SUNO_API_KEY'));
