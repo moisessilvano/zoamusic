@@ -18,7 +18,14 @@ function db(): PDO {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES   => false,
         ];
-        $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+        
+        try {
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+        } catch (PDOException $e) {
+            // SEGURANÇA: Não exibe o erro para o usuário (vazaria senhas/IPs)
+            error_log("LOUVOR.NET DB ERROR: " . $e->getMessage());
+            die("Desculpe, o sistema de louvor está temporariamente indisponível. Por favor, tente novamente em alguns instantes.");
+        }
     }
 
     return $pdo;
