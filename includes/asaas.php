@@ -92,6 +92,7 @@ function asaas_verificar_pagamento(string $payment_id): bool {
  */
 function asaas_request(string $method, string $path, array $body = []): array {
     $url = asaas_url() . $path;
+    logger("Asaas Request: {$method} {$url}");
 
     $ch = curl_init($url);
     $headers = [
