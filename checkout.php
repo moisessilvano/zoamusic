@@ -93,6 +93,19 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
         .step-line-done   { background:#C9A84C; }
         .step-line-pending { background:#E8D9A8; }
     </style>
+    <?php require_once __DIR__ . '/includes/gtag.php'; ?>
+    <script>
+      gtag('event', 'begin_checkout', {
+        'currency': 'BRL',
+        'value': <?= MUSICA_PRICE ?>,
+        'items': [{
+          'item_id': 'musica_personalizada',
+          'item_name': 'Música Cristã Personalizada',
+          'price': <?= MUSICA_PRICE ?>,
+          'quantity': 1
+        }]
+      });
+    </script>
 </head>
 <body class="min-h-screen">
 

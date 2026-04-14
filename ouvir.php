@@ -133,6 +133,20 @@ $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
         .v-bar:nth-child(4){animation-delay:.18s}
         .v-bar:nth-child(5){animation-delay:.06s}
     </style>
+    <?php require_once __DIR__ . '/includes/gtag.php'; ?>
+    <script>
+      gtag('event', 'purchase', {
+        'transaction_id': '<?= $uid ?>',
+        'value': <?= MUSICA_PRICE ?>,
+        'currency': 'BRL',
+        'items': [{
+          'item_id': 'musica_<?= $uid ?>',
+          'item_name': '<?= addslashes($musica['titulo'] ?? 'Música Cristã') ?>',
+          'price': <?= MUSICA_PRICE ?>,
+          'quantity': 1
+        }]
+      });
+    </script>
 </head>
 <body class="min-h-screen">
 
@@ -246,8 +260,6 @@ $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
         <a href="termos.php" class="hover:text-[#C9A84C] transition-colors">Termos de Uso</a>
         <span>·</span>
         <a href="privacidade.php" class="hover:text-[#C9A84C] transition-colors">Privacidade</a>
-        <span>·</span>
-        <a href="/" class="hover:text-[#C9A84C] transition-colors">Ajuda (SAC)</a>
     </div>
     <p class="text-xs" style="color:#C8B99A;">© <?= date('Y') ?> LOUVOR.NET</p>
 </footer>

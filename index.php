@@ -12,16 +12,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $inspiracao = trim($_POST['inspiracao'] ?? '');
     $nome       = trim($_POST['nome'] ?? '');
     $telefone   = preg_replace('/[^0-9+]/', '', trim($_POST['telefone'] ?? ''));
+    $turnstile_token = $_POST['cf-turnstile-response'] ?? '';
+
+    // VERIFICAÇÃO CLOUDFLARE TURNSTILE (Proteção anti-bot)
+    if (!empty(CF_TURNSTILE_SECRET_KEY)) {
+        $ch = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+            'secret'   => CF_TURNSTILE_SECRET_KEY,
+            'response' => $turnstile_token,
+            'remoteip' => $_SERVER['REMOTE_ADDR']
+        ]));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $res = json_decode(curl_exec($ch), true);
+        curl_close($ch);
+
+        if (!$res['success']) {
+            $erro = 'Falha na verificação de segurança. Por favor, tente novamente.';
+            goto fim_post;
+        }
+    }
+
     if (strlen($inspiracao) < 10) {
         $erro = 'Por favor, compartilhe um pouco mais da sua história (mínimo 10 caracteres).';
     } else {
         $uid = uuid4();
         db()->prepare('INSERT INTO musicas (id, inspiracao, nome, telefone, status) VALUES (?, ?, ?, ?, ?)')
             ->execute([$uid, $inspiracao, $nome ?: null, $telefone ?: null, 'aguardando_pagamento']);
+        
+        // Marca que acabamos de gerar um lead para o Analytics
+        session_start();
+        $_SESSION['ga_event'] = 'generate_lead';
+        
         header('Location: checkout.php?uid=' . urlencode($uid));
         exit;
     }
 }
+fim_post:
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -29,6 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LOUVOR.NET — Música Cristã Criada por IA para Você</title>
+    
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     
     <!-- SEO & Social Sharing -->
     <meta name="description" content="Transforme sua história, oração ou versículo em uma música cristã exclusiva com letra e melodia geradas por Inteligência Artificial.">
@@ -276,6 +305,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             pointer-events: none;
         }
     </style>
+    <?php require_once __DIR__ . '/includes/gtag.php'; ?>
+    <?php if (isset($_SESSION['ga_event']) && $_SESSION['ga_event'] === 'generate_lead'): ?>
+    <script>
+      gtag('event', 'generate_lead', {
+        'currency': 'BRL',
+        'value': <?= MUSICA_PRICE ?>
+      });
+    </script>
+    <?php unset($_SESSION['ga_event']); endif; ?>
 </head>
 <body>
 
@@ -567,6 +605,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
+                <!-- Cloudflare Turnstile (Proteção Anti-Bot) -->
+                <?php if (!empty(CF_TURNSTILE_SITE_KEY)): ?>
+                <div class="flex justify-center mb-4">
+                    <div class="cf-turnstile" data-sitekey="<?= CF_TURNSTILE_SITE_KEY ?>" data-theme="light"></div>
+                </div>
+                <?php endif; ?>
+
                 <button type="submit" class="btn-gold w-full py-5 rounded-2xl text-white font-bold text-xl tracking-wide">
                     🎵 &nbsp;CRIAR MEU LOUVOR AGORA
                 </button>
@@ -763,8 +808,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <a href="privacidade.php" class="hover:text-[#C9A84C] transition-colors">Privacidade</a>
         <span>·</span>
         <button onclick="abrirSac()" class="hover:text-[#C9A84C] transition-colors">Ajuda (SAC)</button>
-        <span>·</span>
-        <a href="admin/login.php" class="hover:text-[#C9A84C] transition-colors">Admin</a>
     </div>
     <p class="text-xs" style="color:#C8B99A;">© <?= date('Y') ?> LOUVOR.NET — Todos os direitos reservados.</p>
 </footer>

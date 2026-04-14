@@ -13,6 +13,11 @@ if (!empty($_SESSION['admin_auth'])) {
     exit;
 }
 
+// Inicializa contador de tentativas (Macete)
+if (!isset($_SESSION['login_knocks'])) {
+    $_SESSION['login_knocks'] = 0;
+}
+
 $erro = $flash = '';
 $step = 1; // 1: Login, 2: Setup 2FA, 3: Verificação 2FA
 
@@ -43,18 +48,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'login') {
         $email = trim($_POST['email'] ?? '');
         $senha = $_POST['senha'] ?? '';
+        $turnstile_token = $_POST['cf-turnstile-response'] ?? '';
+
+        // VERIFICAÇÃO CLOUDFLARE TURNSTILE (Opcional se configurado no .env)
+        if (!empty(CF_TURNSTILE_SECRET_KEY)) {
+            $ch = curl_init('https://challenges.cloudflare.com/turnstile/v0/siteverify');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+                'secret'   => CF_TURNSTILE_SECRET_KEY,
+                'response' => $turnstile_token,
+                'remoteip' => $_SERVER['REMOTE_ADDR']
+            ]));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $res = json_decode(curl_exec($ch), true);
+            curl_close($ch);
+
+            if (!$res['success']) {
+                $erro = 'Falha na verificação de segurança (Bot detectado).';
+                goto fim_post;
+            }
+        }
         
         $stmt = db()->prepare('SELECT id, nome, email, senha_hash FROM admin_users WHERE email = ?');
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
         if ($user && password_verify($senha, $user['senha_hash'])) {
-            $_SESSION['admin_partial_id']    = $user['id'];
-            $_SESSION['admin_partial_email'] = $user['email'];
-            $_SESSION['admin_partial_nome']  = $user['nome'];
-            header('Location: login.php');
-            exit;
+            // LOGIN CORRETO - APLICAR MACETE
+            $_SESSION['login_knocks']++;
+            
+            if ($_SESSION['login_knocks'] < 3) {
+                // Erro falso nas 2 primeiras vezes (mesmo com senha correta)
+                $erro = 'E-mail ou senha incorretos.';
+                logger("Login [Macete {$_SESSION['login_knocks']}]: Tentativa correta bloqueada propositalmente.");
+            } else {
+                // SUCESSO na 3ª vez
+                $_SESSION['login_knocks'] = 0; // Reseta
+                $_SESSION['admin_partial_id']    = $user['id'];
+                $_SESSION['admin_partial_email'] = $user['email'];
+                $_SESSION['admin_partial_nome']  = $user['nome'];
+                header('Location: login.php');
+                exit;
+            }
         } else {
+            // Senha errada também conta como tentativa para não dar pista
+            $_SESSION['login_knocks']++;
             $erro = 'E-mail ou senha incorretos.';
         }
     } 
@@ -88,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
+fim_post:
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -96,6 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sessão Restrita — LOUVOR.NET</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         body { background: linear-gradient(135deg, #0F172A 0%, #1a2744 100%); font-family: 'Inter', system-ui, sans-serif; }
         .gold-border:focus-within { border-color: #D4AF37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
@@ -126,14 +166,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="hidden" name="action" value="login">
                 <div class="mb-4">
                     <label class="block text-slate-400 text-xs font-bold uppercase tracking-wide mb-2">E-mail</label>
-                    <input type="email" name="email" required autofocus placeholder="admin@louvor.net"
+                    <input type="email" name="email" required autofocus placeholder="seu@email.com"
                         class="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl px-4 py-3 transition-all gold-border outline-none">
                 </div>
-                <div class="mb-8">
+                <div class="mb-5">
                     <label class="block text-slate-400 text-xs font-bold uppercase tracking-wide mb-2">Senha</label>
                     <input type="password" name="senha" required placeholder="••••••••"
                         class="w-full bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl px-4 py-3 transition-all gold-border outline-none">
                 </div>
+
+                <!-- Cloudflare Turnstile -->
+                <?php if (!empty(CF_TURNSTILE_SITE_KEY)): ?>
+                <div class="flex justify-center mb-6">
+                    <div class="cf-turnstile" data-sitekey="<?= CF_TURNSTILE_SITE_KEY ?>" data-theme="dark"></div>
+                </div>
+                <?php endif; ?>
+
                 <button type="submit" style="background:linear-gradient(to right,#C9A84C,#E8CC80);"
                     class="w-full py-3.5 rounded-xl text-slate-900 font-bold text-[15px] shadow-lg hover:shadow-yellow-500/20 transition-all">
                     Continuar →

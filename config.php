@@ -58,6 +58,27 @@ define('MUSICA_DESCRIPTION', env('MUSICA_DESCRIPTION', 'LOUVOR.NET - Música Cri
 define('ASAAS_WEBHOOK_TOKEN', env('ASAAS_WEBHOOK_TOKEN', ''));
 define('INSTAGRAM_HANDLE',    env('INSTAGRAM_HANDLE', 'louvor.net'));
 
+// --- Google Analytics ---
+define('GTAG_ID', env('GTAG_ID', '')); // Ex: G-XXXXXXXXXX — deixe vazio para desativar
+
+// --- Cloudflare Turnstile (Anti-Bot) ---
+define('CF_TURNSTILE_SITE_KEY',   env('CF_TURNSTILE_SITE_KEY', ''));
+define('CF_TURNSTILE_SECRET_KEY', env('CF_TURNSTILE_SECRET_KEY', ''));
+
+// --- Trava de Segurança: Apenas IPs do Brasil no Admin ---
+if (str_contains($_SERVER['REQUEST_URI'], '/portal-adoracao/')) {
+    $country = $_SERVER['HTTP_CF_IPCOUNTRY'] ?? '';
+    
+    // Se não for BR e não for ambiente de desenvolvimento local (vazio ou XX)
+    if (!empty($country) && !in_array($country, ['BR', 'XX', 'T1'])) {
+        header("HTTP/1.1 404 Not Found");
+        echo "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">
+              <html><head><title>404 Not Found</title></head>
+              <body><h1>Not Found</h1><p>The requested URL was not found on this server.</p></body></html>";
+        exit;
+    }
+}
+
 function asaas_url(): string {
     return ASAAS_ENV === 'production' ? ASAAS_PROD_URL : ASAAS_SANDBOX_URL;
 }

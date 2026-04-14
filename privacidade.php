@@ -13,6 +13,7 @@ require_once __DIR__ . '/config.php';
         body { font-family: 'Inter', sans-serif; background: #FDFBF5; color: #1C1917; }
         .font-display { font-family: 'Cormorant Garamond', serif; }
     </style>
+    <?php require_once __DIR__ . '/includes/gtag.php'; ?>
 </head>
 <body class="min-h-screen py-12 px-6">
     <div class="max-w-3xl mx-auto bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-[#E8D9A8]">

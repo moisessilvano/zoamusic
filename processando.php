@@ -79,6 +79,7 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
 
         .card { background:#fff; border:1px solid rgba(201,168,76,0.18); box-shadow:0 4px 24px rgba(0,0,0,0.05); }
     </style>
+    <?php require_once __DIR__ . '/includes/gtag.php'; ?>
 </head>
 <body class="flex flex-col min-h-screen">
 
