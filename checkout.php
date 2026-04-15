@@ -301,6 +301,37 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
                 ✅ JÁ PAGUEI — CRIAR MINHA MÚSICA
             </button>
         </form>
+        <p class="text-center text-xs mt-4" style="color:#B8A07A;" id="lbl-esperando">
+            ⏳ Aguardando pagamento... A página atualizará automaticamente.
+        </p>
+
+        <!-- Polling Automático de Status -->
+        <script>
+            let tentativas = 0;
+            const maxTentativas = 120; // 10 minutos (5s x 120)
+
+            const pollInterval = setInterval(async () => {
+                if (tentativas >= maxTentativas) {
+                    clearInterval(pollInterval);
+                    return;
+                }
+                tentativas++;
+                try {
+                    let res = await fetch('api/check_status.php?uid=<?= urlencode($uid) ?>');
+                    let data = await res.json();
+                    
+                    // Se o Webhook do Asaas ou algum cron mudar o status para algo diferente de 'aguardando_pagamento'
+                    if (data.status === 'processando' || data.status === 'concluido') {
+                        clearInterval(pollInterval);
+                        document.getElementById('lbl-esperando').textContent = '✅ Pagamento confirmado! Redirecionando...';
+                        document.getElementById('lbl-esperando').style.color = '#16a34a';
+                        setTimeout(() => window.location.reload(), 1500);
+                    }
+                } catch(e) {
+                    // ignora erros de rede e continua tentando
+                }
+            }, 5000); // 5 segundos
+        </script>
     <?php endif; ?>
     <p class="text-center text-xs mt-4" style="color:#B8A07A;">
         Após confirmar, a LOUVOR.NET irá compor sua música exclusiva em minutos.

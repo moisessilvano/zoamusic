@@ -159,7 +159,6 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
             </p>
         </div>
 
-        <p class="text-xs" style="color:#B8A07A;" id="status-msg">Verificando a cada 5 segundos...</p>
     </div>
 </div>
 

@@ -57,7 +57,7 @@ $offset        = ($page - 1) * $per_page;
 $where = []; $params = [];
 if ($status_filter) { $where[] = 'status = ?'; $params[] = $status_filter; }
 if ($search) {
-    $where[] = '(inspiracao LIKE ? OR titulo LIKE ? OR id = ? OR telefone LIKE ?)';
+    $where[] = '(inspiracao LIKE ? OR titulo LIKE ? OR id = ? OR email LIKE ?)';
     array_push($params, "%$search%", "%$search%", $search, "%$search%");
 }
 $where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -67,7 +67,7 @@ $ts = db()->prepare("SELECT COUNT(*) FROM musicas $where_sql"); $ts->execute($pa
 $total = (int) $ts->fetchColumn();
 $total_pages = max(1, ceil($total / $per_page));
 
-$ls = db()->prepare("SELECT id, inspiracao, titulo, status, asaas_id, audio_url, telefone, sms_enviado, created_at FROM musicas $where_sql ORDER BY created_at DESC LIMIT $per_page OFFSET $offset");
+$ls = db()->prepare("SELECT id, inspiracao, titulo, status, asaas_id, audio_url, email, email_enviado, created_at FROM musicas $where_sql ORDER BY created_at DESC LIMIT $per_page OFFSET $offset");
 $ls->execute($params);
 $musicas = $ls->fetchAll();
 
@@ -79,7 +79,7 @@ $stats = db()->query("
         SUM(status = 'processando') AS processando,
         SUM(status = 'aguardando_pagamento') AS aguardando,
         SUM(status = 'erro') AS com_erro,
-        SUM(telefone IS NOT NULL) AS com_telefone
+        SUM(email IS NOT NULL AND email != '') AS com_email
     FROM musicas
 ")->fetch();
 
@@ -310,7 +310,7 @@ function fmt_brl(float $val): string {
                     ['Concluídas',    $stats['concluidas'],   '#4ADE80', '✅'],
                     ['Processando',   $stats['processando'],  '#60A5FA', '⏳'],
                     ['Com Erro',      $stats['com_erro'],     '#F87171', '❌'],
-                    ['Com Telefone',  $stats['com_telefone'], '#D4AF37', '📱'],
+                    ['Com E-mail',    $stats['com_email'],    '#D4AF37', '✉️'],
                 ]; ?>
                 <?php foreach ($vol_cards as [$lbl, $val, $color, $ico]): ?>
                 <div class="stat-card p-5">
@@ -383,7 +383,7 @@ function fmt_brl(float $val): string {
                             <th class="data-table text-left px-5 py-3 text-slate-300">Data</th>
                             <th class="data-table text-left px-4 py-3 text-slate-300">Título / Inspiração</th>
                             <th class="data-table text-left px-4 py-3 text-slate-300">Status</th>
-                            <th class="data-table text-left px-4 py-3 hidden md:table-cell text-slate-300">Telefone / SMS</th>
+                            <th class="data-table text-left px-4 py-3 hidden md:table-cell text-slate-300">E-mail</th>
                             <th class="data-table text-center px-4 py-3 text-slate-300">Ações</th>
                         </tr>
                     </thead>
@@ -410,15 +410,15 @@ function fmt_brl(float $val): string {
                                 <span class="badge-<?= $cls ?> px-2.5 py-1 rounded-full text-xs font-semibold"><?= $lbl ?></span>
                             </td>
                             <td class="px-4 py-3.5 text-xs text-slate-300 hidden md:table-cell">
-                                <?php if ($m['telefone']): ?>
+                                <?php if ($m['email']): ?>
                                     <div class="flex flex-col items-start gap-1">
-                                        <span class="font-medium whitespace-nowrap"><?= htmlspecialchars($m['telefone']) ?></span>
-                                        <?php if ($m['sms_enviado']): ?>
-                                            <span class="badge-green text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wide">SMS Enviado ✓</span>
+                                        <span class="font-medium whitespace-nowrap"><?= htmlspecialchars($m['email']) ?></span>
+                                        <?php if ($m['email_enviado']): ?>
+                                            <span class="badge-green text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wide">E-mail Enviado ✓</span>
                                         <?php elseif ($m['status'] === 'concluido'): ?>
-                                            <span class="badge-red text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wide">SMS Falhou ❌</span>
+                                            <span class="badge-red text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wide">E-mail Falhou ❌</span>
                                         <?php else: ?>
-                                            <span class="badge-gold text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wide">SMS Pendente ⏳</span>
+                                            <span class="badge-gold text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wide">E-mail Pendente ⏳</span>
                                         <?php endif; ?>
                                     </div>
                                 <?php else: ?>
