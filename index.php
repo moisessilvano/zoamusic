@@ -10,8 +10,6 @@ $erro = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $inspiracao = trim($_POST['inspiracao'] ?? '');
-    $nome       = trim($_POST['nome'] ?? '');
-    $telefone   = preg_replace('/[^0-9+]/', '', trim($_POST['telefone'] ?? ''));
     $turnstile_token = $_POST['cf-turnstile-response'] ?? '';
 
     // VERIFICAÇÃO CLOUDFLARE TURNSTILE (Proteção anti-bot)
@@ -37,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = 'Por favor, compartilhe um pouco mais da sua história (mínimo 10 caracteres).';
     } else {
         $uid = uuid4();
-        db()->prepare('INSERT INTO musicas (id, inspiracao, nome, telefone, status) VALUES (?, ?, ?, ?, ?)')
-            ->execute([$uid, $inspiracao, $nome ?: null, $telefone ?: null, 'aguardando_pagamento']);
+        db()->prepare('INSERT INTO musicas (id, inspiracao, status) VALUES (?, ?, ?)')
+            ->execute([$uid, $inspiracao, 'aguardando_pagamento']);
         
         // Salva no histórico do navegador via Script (passando para o frontend)
         echo "<script>
@@ -576,39 +574,6 @@ fim_post:
                             <?= $tag ?>
                         </button>
                         <?php endforeach; ?>
-                    </div>
-                </div>
-
-                <!-- Nome e Telefone SMS -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold mb-1.5" style="color:#8B7355">
-                            👤 Seu nome
-                            <span style="color:#B8A07A; font-weight:400;">(opcional)</span>
-                        </label>
-                        <input type="text" name="nome"
-                            value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>"
-                            placeholder="Como quer ser chamado?"
-                            style="width:100%; border-radius:14px; padding:14px 20px; font-size:15px;
-                                   background:#FDFBF5; border:1.5px solid #E8D9A8; color:#1C1917;
-                                   outline:none; box-sizing:border-box; transition:border-color .2s;"
-                            onfocus="this.style.borderColor='#C9A84C'"
-                            onblur="this.style.borderColor='#E8D9A8'">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold mb-1.5" style="color:#8B7355">
-                            📱 Receber SMS quando a música ficar pronta
-                            <span style="color:#B8A07A; font-weight:400;">(opcional)</span>
-                        </label>
-                        <input type="tel" name="telefone" id="input-telefone"
-                            value="<?= htmlspecialchars($_POST['telefone'] ?? '') ?>"
-                            placeholder="(11) 9 0000-0000"
-                            maxlength="15"
-                            style="width:100%; border-radius:14px; padding:14px 20px; font-size:15px;
-                                   background:#FDFBF5; border:1.5px solid #E8D9A8; color:#1C1917;
-                                   outline:none; box-sizing:border-box; transition:border-color .2s;"
-                            onfocus="this.style.borderColor='#C9A84C'"
-                            onblur="this.style.borderColor='#E8D9A8'">
                     </div>
                 </div>
 

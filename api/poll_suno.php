@@ -10,6 +10,7 @@ require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../includes/suno.php';
 require_once __DIR__ . '/../includes/shortlink.php';
 require_once __DIR__ . '/../includes/zenvia.php';
+require_once __DIR__ . '/../includes/email.php';
 
 header('Content-Type: application/json');
 
@@ -20,7 +21,7 @@ if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
     exit;
 }
 
-$stmt = db()->prepare('SELECT task_id, audio_url, status, nome, telefone, sms_enviado, titulo FROM musicas WHERE id = ?');
+$stmt = db()->prepare('SELECT task_id, audio_url, status, nome, telefone, email, sms_enviado, email_enviado, titulo FROM musicas WHERE id = ?');
 $stmt->execute([$uid]);
 $musica = $stmt->fetch();
 
@@ -71,6 +72,15 @@ if ($result['status'] === 'concluido' && $result['audio_url']) {
         $tit  = $musica['titulo'] ?: 'Sua música';
         if (zenvia_notificar_musica_pronta($nome, $musica['telefone'], $tit, $link)) {
             db()->prepare('UPDATE musicas SET sms_enviado = 1 WHERE id = ?')->execute([$uid]);
+        }
+    }
+
+    // Dispara E-mail (apenas uma vez)
+    if (!empty($musica['email']) && empty($musica['email_enviado'])) {
+        $nome = $musica['nome'] ?: 'amigo(a)';
+        $tit  = $musica['titulo'] ?: 'Sua música';
+        if (email_notificar_musica_pronta($nome, $musica['email'], $tit, $link)) {
+            db()->prepare('UPDATE musicas SET email_enviado = 1 WHERE id = ?')->execute([$uid]);
         }
     }
 

@@ -12,6 +12,7 @@ require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../includes/suno.php';
 require_once __DIR__ . '/../includes/shortlink.php';
 require_once __DIR__ . '/../includes/zenvia.php';
+require_once __DIR__ . '/../includes/email.php';
 
 // Apenas executa se for via CLI ou se uma chave secreta for passada (segurança)
 if (php_sapi_name() !== 'cli' && ($_GET['secret'] ?? '') !== ASAAS_WEBHOOK_TOKEN) {
@@ -68,6 +69,15 @@ foreach ($pendentes as $m) {
                 $tit  = $m['titulo'] ?: 'Sua música';
                 if (zenvia_notificar_musica_pronta($nome, $m['telefone'], $tit, $link)) {
                     $pdo->prepare('UPDATE musicas SET sms_enviado = 1 WHERE id = ?')->execute([$uid]);
+                }
+            }
+
+            // Notifica via E-mail se tiver e-mail e ainda não enviado
+            if (!empty($m['email']) && empty($m['email_enviado'])) {
+                $nome = $m['nome'] ?: 'amigo(a)';
+                $tit  = $m['titulo'] ?: 'Sua música';
+                if (email_notificar_musica_pronta($nome, $m['email'], $tit, $link)) {
+                    $pdo->prepare('UPDATE musicas SET email_enviado = 1 WHERE id = ?')->execute([$uid]);
                 }
             }
             echo "CONCLUÍDO E SALVO.\n";

@@ -6,16 +6,17 @@
 require_once __DIR__ . '/../config.php';
 
 /**
- * Cria ou busca o cliente padrão na Asaas (CPF genérico para PoC).
- * Em produção, colete CPF/nome real do usuário.
+ * Cria ou busca o cliente padrão na Asaas.
  *
- * @param string|null $nome Nome do cliente
+ * @param string $cpf
+ * @param string|null $nome
+ * @param string $email
  * @return string customer_id da Asaas
  */
-function asaas_obter_customer(string $cpf, ?string $nome = null): string {
+function asaas_obter_customer(string $cpf, ?string $nome = null, string $email = ''): string {
     $payload = [
-        'name'  => $nome ? trim($nome) : 'Cliente LOUVOR.NET',
-        'email' => 'cliente@louvor.net',
+        'name'    => $nome ? trim($nome) : 'Cliente LOUVOR.NET',
+        'email'   => $email ?: 'cliente@louvor.net',
         'cpfCnpj' => preg_replace('/\D/', '', $cpf),
     ];
 
@@ -29,15 +30,12 @@ function asaas_obter_customer(string $cpf, ?string $nome = null): string {
  *
  * @param string $musica_uuid UUID da música (usado como referência)
  * @param string $cpf CPF do pagador
+ * @param string $email E-mail do pagador
+ * @param string $nome Nome do pagador
  * @return array{asaas_id: string, pix_key: string, qr_code_image: string}
  */
-function asaas_criar_pix(string $musica_uuid, string $cpf): array {
-    // Busca nome no DB se existir
-    $stmt = db()->prepare('SELECT nome FROM musicas WHERE id = ?');
-    $stmt->execute([$musica_uuid]);
-    $nome = $stmt->fetchColumn();
-
-    $customer_id = asaas_obter_customer($cpf, $nome ?: null);
+function asaas_criar_pix(string $musica_uuid, string $cpf, string $email = '', string $nome = ''): array {
+    $customer_id = asaas_obter_customer($cpf, $nome ?: null, $email);
 
     $due_date = date('Y-m-d', strtotime('+1 day'));
 

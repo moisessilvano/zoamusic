@@ -29,19 +29,28 @@ if ($musica['status'] === 'processando') {
 
 $pix_error  = '';
 
-// --- Processa o envio do CPF ---
+// --- Processa o envio do Nome, E-mail e CPF ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cpf'])) {
+    $nome = trim($_POST['nome'] ?? '');
     $cpf = preg_replace('/\D/', '', $_POST['cpf']);
-    if (strlen($cpf) !== 11 && strlen($cpf) !== 14) {
+    $email = filter_var(trim(strtolower($_POST['email'] ?? '')), FILTER_VALIDATE_EMAIL);
+
+    if (empty($nome)) {
+        $pix_error = 'Por favor, informe seu nome.';
+    } elseif (strlen($cpf) !== 11 && strlen($cpf) !== 14) {
         $pix_error = 'Por favor, informe um CPF ou CNPJ válido.';
+    } elseif (!$email) {
+        $pix_error = 'Por favor, informe um e-mail válido.';
     } else {
         try {
-            $pix = asaas_criar_pix($uid, $cpf);
-            db()->prepare('UPDATE musicas SET cpf=?, asaas_id=?, pix_key=?, qr_code_img=? WHERE id=?')
-                ->execute([$cpf, $pix['asaas_id'], $pix['pix_key'], $pix['qr_code_image'], $uid]);
+            $pix = asaas_criar_pix($uid, $cpf, $email, $nome);
+            db()->prepare('UPDATE musicas SET nome=?, cpf=?, email=?, asaas_id=?, pix_key=?, qr_code_img=? WHERE id=?')
+                ->execute([$nome, $cpf, $email, $pix['asaas_id'], $pix['pix_key'], $pix['qr_code_image'], $uid]);
             
             // Recarrega dados da música
+            $musica['nome'] = $nome;
             $musica['cpf'] = $cpf;
+            $musica['email'] = $email;
             $musica['asaas_id']    = $pix['asaas_id'];
             $musica['pix_key']     = $pix['pix_key'];
             $musica['qr_code_img'] = $pix['qr_code_image'];
@@ -201,11 +210,21 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
             
             <form method="POST" class="space-y-4">
                 <div class="text-left">
+                    <label class="block text-xs font-bold uppercase tracking-wide text-[#8B7355] mb-1.5 ml-1">Seu Nome Completo</label>
+                    <input type="text" name="nome" required placeholder="João da Silva"
+                        class="w-full bg-[#FDFBF5] border-2 border-[#E8D9A8] rounded-2xl px-5 py-4 text-lg font-semibold focus:border-[#C9A84C] outline-none transition-all">
+                </div>
+                <div class="text-left">
+                    <label class="block text-xs font-bold uppercase tracking-wide text-[#8B7355] mb-1.5 ml-1">Seu E-mail</label>
+                    <input type="email" name="email" required placeholder="exemplo@gmail.com"
+                        class="w-full bg-[#FDFBF5] border-2 border-[#E8D9A8] rounded-2xl px-5 py-4 text-lg font-semibold focus:border-[#C9A84C] outline-none transition-all">
+                </div>
+                <div class="text-left">
                     <label class="block text-xs font-bold uppercase tracking-wide text-[#8B7355] mb-1.5 ml-1">CPF ou CNPJ</label>
                     <input type="tel" name="cpf" id="input-cpf" required placeholder="000.000.000-00"
                         class="w-full bg-[#FDFBF5] border-2 border-[#E8D9A8] rounded-2xl px-5 py-4 text-lg font-semibold focus:border-[#C9A84C] outline-none transition-all">
                 </div>
-                <button type="submit" class="btn-gold w-full py-5 rounded-2xl text-white font-bold text-lg shadow-xl">
+                <button type="submit" class="btn-gold w-full py-5 rounded-2xl text-white font-bold text-lg shadow-xl mt-2">
                     GERAR PIX AGORA
                 </button>
             </form>

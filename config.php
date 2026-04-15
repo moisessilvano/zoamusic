@@ -59,6 +59,11 @@ define('SUNO_API_URL', env('SUNO_API_URL'));
 define('ZENVIA_TOKEN', env('ZENVIA_TOKEN'));
 define('ZENVIA_FROM',  env('ZENVIA_FROM', 'LOUVORNET'));
 
+// --- E-mail ---
+define('RESEND_API_KEY',   env('RESEND_API_KEY', ''));
+define('MAIL_FROM_EMAIL',  env('MAIL_FROM_EMAIL', 'contato@louvor.net')); 
+define('MAIL_FROM_NAME',   env('MAIL_FROM_NAME',  'LOUVOR.NET'));
+
 // --- App ---
 define('BASE_URL',           env('BASE_URL', 'http://localhost'));
 define('MUSICA_PRICE',       (float) env('MUSICA_PRICE', '19.90'));
