@@ -24,3 +24,8 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 # 5. Configurações de Redirecionamento do Encurtador (/s/CODIGO)
 RewriteRule ^s/([a-zA-Z0-9]+)$ s/index.php?code=$1 [L,QSA]
+
+# 6. URLs Amigáveis (Remover .php)
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^([^\.]+)$ $1.php [NC,L,QSA]

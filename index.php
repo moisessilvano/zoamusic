@@ -810,9 +810,9 @@ fim_post:
     </div>
     <p class="font-display italic text-sm mb-4" style="color:#A08060;">"Crie em mim, ó Deus, um coração puro." — Salmos 51:10</p>
     <div class="flex items-center justify-center gap-6 text-xs mb-4" style="color:#B8A07A;">
-        <a href="termos.php" class="hover:text-[#C9A84C] transition-colors">Termos de Uso</a>
+        <a href="termos" class="hover:text-[#C9A84C] transition-colors">Termos de Uso</a>
         <span>·</span>
-        <a href="privacidade.php" class="hover:text-[#C9A84C] transition-colors">Privacidade</a>
+        <a href="privacidade" class="hover:text-[#C9A84C] transition-colors">Privacidade</a>
         <span>·</span>
         <button onclick="abrirSac()" class="hover:text-[#C9A84C] transition-colors">Ajuda (SAC)</button>
     </div>

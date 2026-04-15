@@ -277,12 +277,24 @@ audio.addEventListener('pause', pauseViz);
 audio.addEventListener('ended', pauseViz);
 
 function copiarLink(e) {
-    navigator.clipboard.writeText(document.getElementById('share-url').value).then(() => {
-        const btn = e.target;
-        const orig = btn.textContent;
-        btn.textContent = '✓ Copiado!';
-        setTimeout(() => btn.textContent = orig, 2500);
+    const btn = e.currentTarget;
+    const input = document.getElementById('share-url');
+    
+    navigator.clipboard.writeText(input.value).then(() => {
+        const origText = btn.innerHTML;
+        btn.innerHTML = '✓ Link Copiado!';
+        btn.style.background = '#22c55e';
+        btn.style.color = '#fff';
+        btn.style.borderColor = '#22c55e';
+        
+        setTimeout(() => {
+            btn.innerHTML = origText;
+            btn.style.background = '#fff';
+            btn.style.color = '#44403C';
+            btn.style.borderColor = '#E8D9A8';
+        }, 2500);
     });
+}
 // Salva esta música no histórico de músicas do dispositivo
 try {
     const uid   = <?= json_encode($uid) ?>;
