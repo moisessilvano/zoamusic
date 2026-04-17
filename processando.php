@@ -247,34 +247,64 @@ async function checkStatus() {
             progress = Math.max(progress, 45);
         }
 
-        // Se tem task_id mas ainda não concluído: dispara poll do Suno em paralelo (fire-and-forget)
+        if (data.status === 'concluido') {
+            // Dupla validação: se status concluído, garantimos o redirecionamento
+            if (data.audio_url) {
+                redirectDone(uid);
+                return;
+            } else {
+                console.log("Status concluído mas sem URL, tentando novamente em 2s...");
+                setTimeout(checkStatus, 2000);
+                return;
+            }
+        }
+
+        // Se tem task_id mas ainda não concluído: dispara poll do Suno
         if (data.has_task && data.status !== 'concluido') {
             fetch('api/poll_suno.php?uid=' + encodeURIComponent(uid), { keepalive: true }).catch(() => {});
         }
 
-        if (data.status === 'concluido' && data.audio_url) {
-            clearInterval(progressInterval);
-            clearInterval(msgInterval);
-            document.getElementById('progress-bar').style.width = '100%';
-            markDone('step-claude');
-            markDone('step-suno');
-            markDone('step-final');
-            document.getElementById('status-msg').textContent = '✨ Música pronta! Redirecionando...';
-            setTimeout(() => { window.location = 'ouvir.php?uid=' + encodeURIComponent(uid); }, 1500);
-            return; // Para o polling
-        }
-
         if (data.status === 'erro') {
             document.getElementById('status-msg').textContent = '❌ Ocorreu um erro. Entre em contato com o suporte.';
-            return; // Para o polling
+            return;
         }
 
-    } catch (e) { /* rede indisponível, tenta novamente */ }
+    } catch (e) { console.error("Erro no polling:", e); }
 
     setTimeout(checkStatus, 5000);
 }
 
-// Primeira verificação após 3s (dá tempo do worker iniciar)
+function redirectDone(uid) {
+    if (window.alreadyRedirected) return;
+    window.alreadyRedirected = true;
+
+    clearInterval(progressInterval);
+    clearInterval(msgInterval);
+    document.getElementById('progress-bar').style.width = '100%';
+    markDone('step-claude');
+    markDone('step-suno');
+    markDone('step-final');
+    
+    document.getElementById('status-msg').textContent = '✨ Música pronta! Redirecionando...';
+    setTimeout(() => { window.location = 'ouvir.php?uid=' + encodeURIComponent(uid); }, 1500);
+}
+
+// Fallback de segurança: Se após 4 minutos não concluiu, mostra botão de check manual
+setTimeout(() => {
+    const hint = document.getElementById('waiting-hint');
+    if (hint) {
+        const btn = document.createElement('div');
+        btn.style.marginTop = '20px';
+        btn.innerHTML = `<button onclick="window.location.reload()" 
+            style="background:transparent; border:1px solid #C9A84C; color:#C9A84C; padding:10px 24px; border-radius:30px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s;"
+            onmouseover="this.style.background='rgba(201,168,76,0.1)'" onmouseout="this.style.background='transparent'">
+            Ainda processando? Clique para atualizar
+        </button>`;
+        hint.parentNode.insertBefore(btn, hint.nextSibling);
+    }
+}, 240000);
+
+// Primeira verificação após 3s
 setTimeout(checkStatus, 3000);
 </script>
 

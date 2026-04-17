@@ -187,8 +187,8 @@ function fmt_brl(float $val): string {
     #modal.open { display: flex; }
 
     @media (max-width: 768px) {
-        .sidebar { display: none; }
-        .sidebar.open { display: flex; position: fixed; z-index: 100; width: 240px; height: 100vh; }
+        .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; position: fixed; z-index: 100; width: 240px; height: 100vh; }
+        .sidebar.open { transform: translateX(0); }
         .main-content { margin-left: 0 !important; }
     }
 </style>
