@@ -107,16 +107,16 @@ $admins = db()->query("SELECT id, nome, email, totp_secret, created_at FROM admi
 
 <!-- ═══ SIDEBAR ═══ -->
 <aside class="sidebar w-60 flex-shrink-0 flex flex-col h-screen fixed left-0 top-0" id="sidebar">
-    <div class="px-5 py-5 border-b border-white/5">
+    <div class="px-5 py-5 border-b border-white/5 flex items-center justify-between">
         <a href="../" class="flex items-center gap-2.5">
-            <svg class="w-7 h-7" viewBox="0 0 32 32" fill="none">
-                <circle cx="16" cy="16" r="15" stroke="#D4AF37" stroke-width="1.5"/>
-                <path d="M16 8 L18 13 L23 13 L19 16 L21 21 L16 18 L11 21 L13 16 L9 13 L14 13 Z" fill="#D4AF37"/>
-            </svg>
+            <img src="../assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover border border-[#D4AF37]/30">
             <span class="font-bold tracking-widest text-base text-white">LOUVOR<span style="color:#D4AF37">.NET</span></span>
         </a>
-        <p class="text-slate-400 text-xs mt-1 ml-9">Admin</p>
+        <button class="md:hidden text-slate-400 hover:text-white" onclick="closeSidebar()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
     </div>
+    <p class="text-slate-400 text-xs mt-2 ml-14 md:block hidden">Admin</p>
 
     <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider px-3 py-2">Painel</p>

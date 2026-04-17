@@ -197,13 +197,16 @@ function fmt_brl(float $val): string {
 
 <!-- ═══ SIDEBAR ═══ -->
 <aside class="sidebar w-60 flex-shrink-0 flex flex-col h-screen fixed left-0 top-0" id="sidebar">
-    <div class="px-5 py-5 border-b border-white/5">
+    <div class="px-5 py-5 border-b border-white/5 flex items-center justify-between">
         <a href="../" class="flex items-center gap-2.5">
             <img src="../assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover border border-[#D4AF37]/30">
             <span class="font-bold tracking-widest text-base text-white">LOUVOR<span style="color:#D4AF37">.NET</span></span>
         </a>
-        <p class="text-slate-400 text-xs mt-1 ml-9">Admin</p>
+        <button class="md:hidden text-slate-400 hover:text-white" onclick="closeSidebar()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
     </div>
+    <p class="text-slate-400 text-xs mt-2 ml-14 md:block hidden">Admin</p>
 
     <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider px-3 py-2">Painel</p>
