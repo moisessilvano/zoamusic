@@ -148,7 +148,10 @@ $admins = db()->query("SELECT id, nome, email, totp_secret, created_at FROM admi
             Membros da Equipe
             <span class="hidden md:inline text-slate-400 font-normal text-sm ml-3 border-l border-slate-700 pl-3">Controle de acesso restrito (2FA)</span>
         </h1>
-        <div class="text-xs text-slate-300"><?= date('d/m/Y H:i') ?></div>
+        <div class="flex items-center gap-4">
+            <div class="hidden sm:block text-xs text-slate-300"><?= date('d/m/Y H:i') ?></div>
+            <a href="logout.php" class="px-3 py-1.5 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold rounded-lg hover:bg-red-500/20 transition-all">🚪 Sair</a>
+        </div>
     </header>
 
     <div class="flex-1 p-4 md:p-6 space-y-6">

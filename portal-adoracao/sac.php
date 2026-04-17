@@ -40,7 +40,10 @@ $mensagens = db()->query("SELECT * FROM sac_mensagens ORDER BY created_at DESC")
     <div class="max-w-5xl mx-auto">
         <div class="flex items-center justify-between mb-8">
             <h1 class="text-2xl font-bold">📩 Mensagens de Suporte (SAC)</h1>
-            <a href="index.php" class="text-sm text-slate-400 hover:text-white">← Voltar ao Dashboard</a>
+            <div class="flex items-center gap-6">
+                <a href="index.php" class="text-sm text-slate-400 hover:text-white">← Voltar ao Dashboard</a>
+                <a href="logout.php" class="text-sm text-red-400 hover:text-red-300">🚪 Sair</a>
+            </div>
         </div>
 
         <?php if (empty($mensagens)): ?>

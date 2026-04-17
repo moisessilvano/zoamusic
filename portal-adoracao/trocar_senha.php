@@ -87,6 +87,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     Atualizar Senha e Entrar
                 </button>
             </form>
+
+            <div class="mt-6 pt-6 border-t border-slate-700/50 text-center">
+                <a href="logout.php" class="text-slate-500 text-xs hover:text-red-400 transition-colors flex items-center justify-center gap-2">
+                    🚪 Sair da sessão
+                </a>
+            </div>
         </div>
         
         <p class="text-center text-slate-600 text-[10px] mt-8 uppercase tracking-widest">Acesso Protegido por Criptografia SSL</p>
