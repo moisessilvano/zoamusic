@@ -73,6 +73,7 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="assets/logo.jpeg">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         *, body { font-family: 'Inter', system-ui, sans-serif; }
@@ -127,10 +128,7 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
 
 <!-- NAVBAR -->
 <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center gap-3">
-    <svg class="w-8 h-8" viewBox="0 0 40 40" fill="none">
-        <circle cx="20" cy="20" r="19" stroke="#C9A84C" stroke-width="1.2" fill="rgba(201,168,76,0.07)"/>
-        <path d="M20 9 L22.5 16.5 L30.5 16.5 L24 21.5 L26.5 29 L20 24 L13.5 29 L16 21.5 L9.5 16.5 L17.5 16.5 Z" fill="#C9A84C"/>
-    </svg>
+    <img src="assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover border border-[#C9A84C]/30">
     <a href="/" class="text-xl font-bold tracking-widest" style="color:#1C1917; letter-spacing:.12em">
         LOUVOR<span style="color:#C9A84C">.NET</span>
     </a>

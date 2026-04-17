@@ -132,6 +132,7 @@ function fmt_brl(float $val): string {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — LOUVOR.NET</title>
+<link rel="icon" type="image/jpeg" href="../assets/logo.jpeg">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
     * { font-family: 'Inter', system-ui, sans-serif; }
@@ -194,10 +195,7 @@ function fmt_brl(float $val): string {
 <aside class="sidebar w-60 flex-shrink-0 flex flex-col h-screen fixed left-0 top-0" id="sidebar">
     <div class="px-5 py-5 border-b border-white/5">
         <a href="../" class="flex items-center gap-2.5">
-            <svg class="w-7 h-7" viewBox="0 0 32 32" fill="none">
-                <circle cx="16" cy="16" r="15" stroke="#D4AF37" stroke-width="1.5"/>
-                <path d="M16 8 L18 13 L23 13 L19 16 L21 21 L16 18 L11 21 L13 16 L9 13 L14 13 Z" fill="#D4AF37"/>
-            </svg>
+            <img src="../assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover border border-[#D4AF37]/30">
             <span class="font-bold tracking-widest text-base text-white">LOUVOR<span style="color:#D4AF37">.NET</span></span>
         </a>
         <p class="text-slate-400 text-xs mt-1 ml-9">Admin</p>

@@ -132,7 +132,7 @@ function email_template_musica_pronta(string $nome, string $titulo, string $link
           <!-- Header dourado -->
           <tr>
             <td style="background:linear-gradient(135deg,#C9A84C 0%,#D4AF37 50%,#B8922A 100%);padding:40px 48px;text-align:center;">
-              <p style="margin:0 0 8px;font-size:36px;line-height:1;">★</p>
+              <img src="{$base_url}/assets/logo.jpeg" width="60" height="60" style="width:60px;height:60px;border-radius:30px;border:2px solid rgba(255,255,255,0.4);margin-bottom:12px;" alt="LOUVOR.NET">
               <h1 style="margin:0;font-size:28px;font-weight:700;color:#FFFFFF;letter-spacing:0.12em;font-family:Georgia,serif;">
                 LOUVOR<span style="font-style:italic;">.NET</span>
               </h1>

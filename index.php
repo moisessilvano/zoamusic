@@ -68,13 +68,15 @@ fim_post:
     <meta name="description" content="Transforme sua história, oração ou versículo em uma música cristã exclusiva com letra e melodia geradas por Inteligência Artificial.">
     <meta property="og:title" content="LOUVOR.NET — Sua história em um louvor eterno">
     <meta property="og:description" content="Crie uma música cristã exclusiva com IA. Sua oração agora tem melodia.">
-    <meta property="og:image" content="<?= BASE_URL ?>/assets/og-image.jpg">
+    <meta property="og:image" content="<?= BASE_URL ?>/assets/logo.jpeg">
     <meta property="og:url" content="<?= BASE_URL ?>">
     <meta name="twitter:card" content="summary_large_image">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="icon" type="image/jpeg" href="assets/logo.jpeg">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -333,18 +335,8 @@ fim_post:
 ════════════════════════════════════════ -->
 <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-4 flex items-center justify-between">
     <a href="/" class="flex items-center gap-2.5">
-        <!-- Logo asa/estrela -->
-        <svg class="w-9 h-9" viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="19" stroke="#C9A84C" stroke-width="1.2" fill="rgba(201,168,76,0.07)"/>
-            <path d="M20 9 L22.5 16.5 L30.5 16.5 L24 21.5 L26.5 29 L20 24 L13.5 29 L16 21.5 L9.5 16.5 L17.5 16.5 Z"
-                  fill="url(#star-grad)"/>
-            <defs>
-                <linearGradient id="star-grad" x1="10" y1="9" x2="30" y2="29" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stop-color="#E8CC80"/>
-                    <stop offset="100%" stop-color="#B8922A"/>
-                </linearGradient>
-            </defs>
-        </svg>
+        <!-- Logo arredondada -->
+        <img src="assets/logo.jpeg" alt="LOUVOR.NET" class="w-9 h-9 rounded-full object-cover border border-[#C9A84C]/30">
         <span class="text-xl font-bold tracking-widest" style="color:#1C1917; letter-spacing:.12em">
             LOUVOR<span style="color:#C9A84C">.NET</span>
         </span>
@@ -386,10 +378,7 @@ fim_post:
         <div class="flex justify-center mb-8">
             <div class="relative">
                 <div class="hero-ornament absolute inset-0 -m-8 opacity-40"></div>
-                <svg class="w-20 h-20 relative z-10" viewBox="0 0 40 40" fill="none">
-                    <circle cx="20" cy="20" r="19" stroke="#C9A84C" stroke-width="1" fill="rgba(201,168,76,0.05)"/>
-                    <path d="M20 9 L22.5 16.5 L30.5 16.5 L24 21.5 L26.5 29 L20 24 L13.5 29 L16 21.5 L9.5 16.5 L17.5 16.5 Z" fill="#C9A84C"/>
-                </svg>
+                <img src="assets/logo.jpeg" alt="LOUVOR.NET" class="w-20 h-20 rounded-full object-cover border-2 border-[#C9A84C]/40 relative z-10 mx-auto">
             </div>
         </div>
 
@@ -765,10 +754,7 @@ fim_post:
 ════════════════════════════════════════ -->
 <footer class="px-6 py-10 text-center" style="background:#FDFBF5; border-top:1px solid rgba(201,168,76,0.15);">
     <div class="flex items-center justify-center gap-2.5 mb-3">
-        <svg class="w-6 h-6" viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="19" stroke="#C9A84C" stroke-width="1.2" fill="rgba(201,168,76,0.07)"/>
-            <path d="M20 9 L22.5 16.5 L30.5 16.5 L24 21.5 L26.5 29 L20 24 L13.5 29 L16 21.5 L9.5 16.5 L17.5 16.5 Z" fill="#C9A84C"/>
-        </svg>
+        <img src="assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover border border-[#C9A84C]/30">
         <span class="font-bold tracking-widest text-base" style="color:#1C1917; letter-spacing:.12em">
             LOUVOR<span style="color:#C9A84C">.NET</span>
         </span>

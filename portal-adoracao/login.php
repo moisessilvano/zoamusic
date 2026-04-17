@@ -13,10 +13,6 @@ if (!empty($_SESSION['admin_auth'])) {
     exit;
 }
 
-// Inicializa contador de tentativas (Macete)
-if (!isset($_SESSION['login_knocks'])) {
-    $_SESSION['login_knocks'] = 0;
-}
 
 $erro = $flash = '';
 $step = 1; // 1: Login, 2: Setup 2FA, 3: Verificação 2FA
@@ -76,25 +72,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $stmt->fetch();
 
             if ($user && password_verify($senha, $user['senha_hash'])) {
-                // SENHA CORRETA - Incrementa o contador de "batidas"
-                $_SESSION['login_knocks']++;
-                
-                if ($_SESSION['login_knocks'] < 3) {
-                    // Simula erro mesmo estando tudo certo
-                    $erro = 'E-mail ou senha incorretos.';
-                    logger("Login [Knock {$_SESSION['login_knocks']}]: Senha correta, mas acesso segurado pelo macete.");
-                } else {
-                    // SUCESSO na 3ª vez consecutiva
-                    $_SESSION['login_knocks'] = 0; // Reseta para a próxima
-                    $_SESSION['admin_partial_id']    = $user['id'];
-                    $_SESSION['admin_partial_email'] = $user['email'];
-                    $_SESSION['admin_partial_nome']  = $user['nome'];
-                    header('Location: login.php');
-                    exit;
-                }
+                // SUCESSO
+                $_SESSION['admin_partial_id']    = $user['id'];
+                $_SESSION['admin_partial_email'] = $user['email'];
+                $_SESSION['admin_partial_nome']  = $user['nome'];
+                header('Location: login.php');
+                exit;
             } else {
-                // SENHA ERRADA - Reseta o contador para dificultar brute-force
-                $_SESSION['login_knocks'] = 0;
                 $erro = 'E-mail ou senha incorretos.';
             }
         }
@@ -136,6 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sessão Restrita — LOUVOR.NET</title>
+    <link rel="icon" type="image/jpeg" href="../assets/logo.jpeg">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -149,10 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Logo -->
         <div class="text-center mb-8">
-            <svg class="w-12 h-12 mx-auto mb-3" viewBox="0 0 32 32" fill="none">
-                <circle cx="16" cy="16" r="15" stroke="#D4AF37" stroke-width="2"/>
-                <path d="M16 8 L18 13 L23 13 L19 16 L21 21 L16 18 L11 21 L13 16 L9 13 L14 13 Z" fill="#D4AF37"/>
-            </svg>
+            <img src="../assets/logo.jpeg" alt="LOUVOR.NET" class="w-12 h-12 mx-auto mb-3 rounded-full object-cover border-2 border-[#D4AF37]/30">
             <h1 class="text-2xl font-bold tracking-widest text-white">LOUVOR<span style="color:#D4AF37">.NET</span></h1>
             <p class="text-slate-500 text-sm mt-1">Acesso Restrito</p>
         </div>
