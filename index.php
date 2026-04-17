@@ -60,17 +60,36 @@ fim_post:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOUVOR.NET — Música Cristã Criada por IA para Você</title>
+    <title>LOUVOR.NET - Criar Louvor com IA | Sua Oração em Música Cristã</title>
+    <link rel="canonical" href="<?= BASE_URL ?>" />
     
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     
     <!-- SEO & Social Sharing -->
-    <meta name="description" content="Transforme sua história, oração ou versículo em uma música cristã exclusiva com letra e melodia geradas por Inteligência Artificial.">
-    <meta property="og:title" content="LOUVOR.NET — Sua história em um louvor eterno">
-    <meta property="og:description" content="Crie uma música cristã exclusiva com IA. Sua oração agora tem melodia.">
+    <meta name="description" content="Crie louvores personalizados com Inteligência Artificial. Transforme sua oração, história ou versículo em uma música cristã exclusiva em minutos no LOUVOR.NET.">
+    <meta name="keywords" content="louvor com ia, criar louvor ia, musica crista ia, gerador de louvor, inteligencia artificial gospel, adoração personalizada">
+    <meta property="og:title" content="LOUVOR.NET — Crie Louvor com IA para sua história">
+    <meta property="og:description" content="Transforme sua oração ou versículo em um louvor exclusivo com Inteligência Artificial.">
     <meta property="og:image" content="<?= BASE_URL ?>/assets/logo.jpeg">
     <meta property="og:url" content="<?= BASE_URL ?>">
     <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "LOUVOR.NET",
+      "operatingSystem": "All",
+      "applicationCategory": "MultimediaApplication",
+      "description": "Crie louvores personalizados com Inteligência Artificial. Gerador de música cristã a partir de histórias, orações e versículos.",
+      "offers": {
+        "@type": "Offer",
+        "price": "<?= MUSICA_PRICE ?>",
+        "priceCurrency": "BRL"
+      }
+    }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -702,12 +721,14 @@ fim_post:
 
         <div class="space-y-3">
             <?php foreach ([
+                ['Como funciona a criação de louvor com IA?',           'Nossa inteligência artificial é treinada com milhares de composições cristãs. Ela analisa sua história ou oração e compõe uma letra única, gerando em seguida uma melodia e arranjo instrumental profissional no estilo de adoração que você escolheu.'],
                 ['A música é realmente única?',                'Sim. Cada composição é gerada do zero a partir da sua história pessoal. Nenhuma outra pessoa no mundo terá exatamente a mesma letra ou melodia.'],
                 ['Quanto tempo leva para ficar pronta?',       'Em média 3 a 5 minutos após a confirmação do PIX. Você acompanha em tempo real na tela de processamento.'],
                 ['Posso usar no culto ou compartilhar online?','Sim! A música é sua. Você pode ouvir, baixar em MP3, compartilhar no WhatsApp, usar em cultos ou qualquer evento pessoal.'],
                 ['O pagamento é seguro?',                      'Totalmente. Usamos o Asaas, plataforma certificada pelo Banco Central. O PIX é processado em segundos.'],
                 ['E se a música não ficar como esperado?',     'Nossa IA é treinada especificamente para composição cristã. Se não gostar, entre em contato — analisamos caso a caso.'],
                 ['Preciso criar uma conta?',                   'Não! Você recebe o link da sua música direto e pode acessá-lo a qualquer momento pelo link compartilhável.'],
+                ['Como a IA cria a melodia e a letra?',        'Utilizamos modelos de linguagem avançados para estruturar a letra baseada em princípios bíblicos e teológicos, combinados com motores de síntese de áudio que criam arranjos musicais originais, respeitando o ritmo e a harmonia típicos do louvor.'],
             ] as [$q, $a]): ?>
             <details class="faq-item rounded-2xl overflow-hidden">
                 <summary class="flex items-center justify-between px-6 py-5 font-semibold text-sm" style="color:#1C1917;">
@@ -752,14 +773,31 @@ fim_post:
 <!-- ════════════════════════════════════════
      FOOTER
 ════════════════════════════════════════ -->
-<footer class="px-6 py-10 text-center" style="background:#FDFBF5; border-top:1px solid rgba(201,168,76,0.15);">
-    <div class="flex items-center justify-center gap-2.5 mb-3">
-        <img src="assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover border border-[#C9A84C]/30">
-        <span class="font-bold tracking-widest text-base" style="color:#1C1917; letter-spacing:.12em">
-            LOUVOR<span style="color:#C9A84C">.NET</span>
-        </span>
-    </div>
-    <p class="font-display italic text-sm mb-4" style="color:#A08060;">"Crie em mim, ó Deus, um coração puro." — Salmos 51:10</p>
+<footer class="px-6 py-16 text-center" style="background:#FDFBF5; border-top:1px solid rgba(201,168,76,0.15);">
+    <div class="max-w-5xl mx-auto">
+        <!-- SEO Footer Content -->
+        <div class="grid md:grid-cols-3 gap-8 text-left mb-16 pb-12 border-b border-[#E8D9A8]/50">
+            <div>
+                <h4 class="text-[11px] font-bold uppercase tracking-[0.2em] mb-4 text-[#C9A84C]">Louvor com IA</h4>
+                <p class="text-xs leading-relaxed text-[#6B5B3E]">O LOUVOR.NET utiliza Inteligência Artificial avançada para transformar orações e histórias em músicas cristãs únicas, proporcionando uma nova forma de adoração pessoal.</p>
+            </div>
+            <div>
+                <h4 class="text-[11px] font-bold uppercase tracking-[0.2em] mb-4 text-[#C9A84C]">Música Cristã</h4>
+                <p class="text-xs leading-relaxed text-[#6B5B3E]">Nossa plataforma é especializada em composições gospel, garantindo que cada melodia e letra respeite a essência e a reverência da música cristã tradicional e contemporânea.</p>
+            </div>
+            <div>
+                <h4 class="text-[11px] font-bold uppercase tracking-[0.2em] mb-4 text-[#C9A84C]">Tecnologia Gospel</h4>
+                <p class="text-xs leading-relaxed text-[#6B5B3E]">Primeira ferramenta dedicada a geradores de louvor via IA no Brasil. Tecnologia a serviço do Reino para edificar vidas através da sua própria jornada de fé.</p>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-center gap-2.5 mb-3">
+            <img src="assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover border border-[#C9A84C]/30">
+            <span class="font-bold tracking-widest text-base" style="color:#1C1917; letter-spacing:.12em">
+                LOUVOR<span style="color:#C9A84C">.NET</span>
+            </span>
+        </div>
+        <p class="font-display italic text-sm mb-4" style="color:#A08060;">"Crie em mim, ó Deus, um coração puro." — Salmos 51:10</p>
     <div class="flex items-center justify-center gap-6 text-xs mb-4" style="color:#B8A07A;">
         <a href="termos" class="hover:text-[#C9A84C] transition-colors">Termos de Uso</a>
         <span>·</span>
