@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         if ($verificado) {
-            $stmt = db()->prepare('SELECT id, nome, email, senha_hash FROM admin_users WHERE email = ?');
+            $stmt = db()->prepare('SELECT id, nome, email, senha_hash, reset_password FROM admin_users WHERE email = ?');
             $stmt->execute([$email]);
             $user = $stmt->fetch();
 
@@ -76,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['admin_partial_id']    = $user['id'];
                 $_SESSION['admin_partial_email'] = $user['email'];
                 $_SESSION['admin_partial_nome']  = $user['nome'];
+                $_SESSION['admin_partial_reset'] = $user['reset_password'];
                 header('Location: login.php');
                 exit;
             } else {
@@ -99,8 +100,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['admin_user_id'] = $admin_id;
             $_SESSION['admin_user_nome'] = $_SESSION['admin_partial_nome'];
             $_SESSION['admin_at'] = time();
+            $_SESSION['admin_reset_password'] = $_SESSION['admin_partial_reset'];
 
-            unset($_SESSION['admin_partial_id'], $_SESSION['admin_partial_email'], $_SESSION['admin_partial_nome']);
+            unset($_SESSION['admin_partial_id'], $_SESSION['admin_partial_email'], $_SESSION['admin_partial_nome'], $_SESSION['admin_partial_reset']);
             header('Location: index.php');
             exit;
         } else {

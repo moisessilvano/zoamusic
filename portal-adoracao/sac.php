@@ -2,6 +2,10 @@
 session_start();
 if (empty($_SESSION['admin_auth'])) { header('Location: login.php'); exit; }
 
+if (!empty($_SESSION['admin_reset_password'])) {
+    header('Location: trocar_senha.php'); exit;
+}
+
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../db.php';
 
