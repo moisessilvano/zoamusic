@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Integração Zenvia (SMS)
+// ZOA MUSIC - Integração Zenvia (SMS)
 // Docs: https://zenvia.github.io/zenvia-openapi-spec/v2/
 // ============================================================
 
@@ -75,7 +75,7 @@ function zenvia_enviar_sms(string $para, string $mensagem): bool {
  */
 function zenvia_notificar_musica_pronta(string $nome, string $telefone, string $titulo, string $link): bool {
     $nome_curto = explode(' ', trim($nome))[0]; // só o primeiro nome
-    $mensagem = "Oi {$nome_curto}! 🎵 Sua música \"{$titulo}\" está pronta no LOUVOR.NET! Ouça agora: {$link}";
+    $mensagem = "Oi {$nome_curto}! 🎵 Sua música \"{$titulo}\" está pronta no ZOA MUSIC! Ouça agora: {$link}";
 
     // Trunca para 160 chars se necessário
     if (mb_strlen($mensagem) > 160) {

@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Tela de Processamento (Tela 3)
+// ZOA MUSIC - Tela de Processamento (Tela 3)
 // ============================================================
 
 require_once __DIR__ . '/config.php';
@@ -32,11 +32,11 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOUVOR.NET — Compondo sua música...</title>
+    <title>ZOA MUSIC — Compondo sua zoeira...</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/jpeg" href="assets/logo.jpeg">
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         *, body { font-family: 'Inter', system-ui, sans-serif; }
@@ -44,16 +44,17 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
 
         body {
             background:
-                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201,168,76,0.12) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 40% at 80% 60%, rgba(174,210,255,0.1) 0%, transparent 50%),
-                #FDFBF5;
+                radial-gradient(ellipse 70% 40% at 50% 0%, rgba(255,45,120,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 30% at 80% 60%, rgba(191,90,242,0.08) 0%, transparent 50%),
+                #080808;
             min-height: 100vh;
+            color: #F0F0F0;
         }
 
         .navbar {
-            background: rgba(255,255,255,0.88);
+            background: rgba(8,8,8,0.9);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(201,168,76,0.15);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
 
         /* Barras de onda */
@@ -78,7 +79,7 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
         @keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
         .step-anim { animation: slideIn 0.4s ease forwards; opacity: 0; }
 
-        .card { background:#fff; border:1px solid rgba(201,168,76,0.18); box-shadow:0 4px 24px rgba(0,0,0,0.05); }
+        .card { background:#141414; border:1px solid rgba(255,255,255,0.08); box-shadow:0 4px 24px rgba(0,0,0,0.3); }
     </style>
     <?php require_once __DIR__ . '/includes/gtag.php'; ?>
 </head>
@@ -86,9 +87,9 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
 
 <!-- NAVBAR -->
 <nav class="navbar px-6 py-4 flex items-center gap-3">
-    <img src="assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover border border-[#C9A84C]/30 spin-logo">
-    <a href="/" class="text-xl font-bold tracking-widest" style="color:#1C1917; letter-spacing:.12em">
-        LOUVOR<span style="color:#C9A84C">.NET</span>
+    <img src="assets/logo.svg" alt="ZOA MUSIC" class="w-8 h-8 rounded-full spin-logo">
+    <a href="/" class="font-bold text-xl tracking-tight">
+        ZOA<span style="color:#FF2D78"> MUSIC</span>
     </a>
 </nav>
 
@@ -97,20 +98,20 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
     <div class="max-w-lg w-full text-center">
 
         <!-- Título -->
-        <h1 class="font-display text-5xl md:text-6xl font-bold mb-3" style="color:#1C1917;">
-            Compondo sua
-            <span style="background:linear-gradient(135deg,#B8922A,#D4AF37,#E8CC80);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-                melodia...
+        <h1 class="font-display text-5xl md:text-6xl font-bold mb-3" style="color:#F0F0F0;">
+            Compondo a
+            <span style="background:linear-gradient(135deg,#FF2D78,#FF6B9D,#FFD60A);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+                zoeira... 😈
             </span>
         </h1>
-        <p class="text-base mb-12" style="color:#6B5B3E;">
-            Nossa IA está transformando sua história em adoração.
+        <p class="text-base mb-12" style="color:#888;">
+            Nossa IA está escrevendo a letra e compondo a melodia agora mesmo.
         </p>
 
         <!-- Barras de onda -->
         <div class="flex items-end justify-center gap-2 mb-12" style="height:64px;">
             <?php for ($i=0;$i<7;$i++): ?>
-            <div class="wave-bar w-3 rounded-full" style="background:linear-gradient(to top,#C9A84C,#E8CC80); height:100%;"></div>
+            <div class="wave-bar w-3 rounded-full" style="background:linear-gradient(to top,#FF2D78,#BF5AF2); height:100%;"></div>
             <?php endfor; ?>
         </div>
 
@@ -119,8 +120,8 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
             <p class="font-semibold text-sm mb-5 text-center" style="color:#1C1917;">O que está acontecendo:</p>
             
             <!-- Barra de Progresso Nova -->
-            <div class="w-full bg-slate-100 h-2 rounded-full mb-8 overflow-hidden">
-                <div id="progress-bar" class="h-full bg-gradient-to-r from-[#C9A84C] to-[#E8CC80] transition-all duration-1000 ease-out" style="width: 5%;"></div>
+            <div class="w-full h-2 rounded-full mb-8 overflow-hidden" style="background:#1E1E1E;">
+                <div id="progress-bar" class="h-full transition-all duration-1000 ease-out" style="width:5%; background:linear-gradient(to right,#FF2D78,#BF5AF2);"></div>
             </div>
 
             <div class="space-y-4">
@@ -150,10 +151,10 @@ if ($musica['status'] === 'processando' && empty($musica['task_id']) && empty($m
             ⚠️ O processo leva de 2 a 4 minutos. Por favor, não feche esta página.
         </p>
 
-        <!-- Versículo rotativo -->
-        <div class="rounded-2xl px-6 py-4 mb-6" style="background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.18);">
-            <p class="font-display italic text-base" style="color:#8B6914;" id="verse-text">
-                "Crie em mim, ó Deus, um coração puro..." — Salmos 51:10
+        <!-- Mensagem rotativa -->
+        <div class="rounded-2xl px-6 py-4 mb-6" style="background:rgba(255,45,120,0.07); border:1px solid rgba(255,45,120,0.18);">
+            <p class="italic text-base" style="color:#FF6B9D;" id="verse-text">
+                "A vingança mais criativa tem melodia..." 😂
             </p>
         </div>
 
@@ -171,11 +172,12 @@ if (needsTrigger) {
 }
 
 const verses = [
-    '"Crie em mim, ó Deus, um coração puro..." — Salmos 51:10',
-    '"Cantai ao Senhor um cântico novo..." — Salmos 96:1',
-    '"Louvai ao Senhor com harpa..." — Salmos 33:2',
-    '"Tudo que tem fôlego louve ao Senhor." — Salmos 150:6',
-    '"Alegrai-vos no Senhor sempre." — Filipenses 4:4',
+    '"A vingança mais criativa tem melodia..." 😂',
+    '"Seu amigo vai ouvir isso e nunca mais chegar atrasado." ⏰',
+    '"A IA está escolhendo o tom certo pra humilhar com classe." 🎤',
+    '"Toda grande zoeira começa com uma boa letra." 🤣',
+    '"Alguns erros merecem ser imortalizados em música." 🎵',
+    '"Preparando a obra-prima do constrangimento..." 😈',
 ];
 let vi = 0;
 setInterval(() => {
@@ -285,7 +287,7 @@ function redirectDone(uid) {
     markDone('step-suno');
     markDone('step-final');
     
-    document.getElementById('status-msg').textContent = '✨ Música pronta! Redirecionando...';
+    document.getElementById('status-msg').textContent = '🤣 Zoeira pronta! Redirecionando...';
     setTimeout(() => { window.location = 'ouvir.php?uid=' + encodeURIComponent(uid); }, 1500);
 }
 

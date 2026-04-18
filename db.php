@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Conexão PDO Singleton
+// ZOA MUSIC - Conexão PDO Singleton
 // ============================================================
 
 require_once __DIR__ . '/config.php';
@@ -21,10 +21,11 @@ function db(): PDO {
         
         try {
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            // Auto-migrate: adiciona coluna estilo se não existir
+            try { $pdo->exec("ALTER TABLE musicas ADD COLUMN estilo VARCHAR(100) DEFAULT NULL"); } catch (PDOException $e) { /* já existe */ }
         } catch (PDOException $e) {
-            // SEGURANÇA: Não exibe o erro para o usuário (vazaria senhas/IPs)
-            error_log("LOUVOR.NET DB ERROR: " . $e->getMessage());
-            die("Desculpe, o sistema de louvor está temporariamente indisponível. Por favor, tente novamente em alguns instantes.");
+            error_log("ZOA MUSIC DB ERROR: " . $e->getMessage());
+            die("Desculpe, o sistema está temporariamente indisponível. Por favor, tente novamente em alguns instantes.");
         }
     }
 

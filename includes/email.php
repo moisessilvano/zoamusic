@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Integração E-mail
+// ZOA MUSIC - Integração E-mail
 // Usa PHPMailer via SMTP se configurado, senão cai no mail()
 // ============================================================
 
@@ -23,7 +23,7 @@ function email_notificar_musica_pronta(string $nome, string $email, string $titu
     $nome_curto = explode(' ', trim($nome))[0];
     if (!$nome_curto) $nome_curto = 'amigo(a)';
 
-    $assunto = "🎵 Sua música \"{$titulo}\" está pronta! — LOUVOR.NET";
+    $assunto = "🎵 Sua música \"{$titulo}\" está pronta! — ZOA MUSIC";
 
     $html = email_template_musica_pronta($nome_curto, $titulo, $link);
 
@@ -41,7 +41,7 @@ function email_notificar_musica_pronta(string $nome, string $email, string $titu
  */
 function email_enviar_resend(string $para, string $nome_para, string $assunto, string $html): bool {
     $from_email = defined('MAIL_FROM_EMAIL') && MAIL_FROM_EMAIL ? MAIL_FROM_EMAIL : 'contato@louvor.net';
-    $from_name  = defined('MAIL_FROM_NAME')  && MAIL_FROM_NAME  ? MAIL_FROM_NAME  : 'LOUVOR.NET';
+    $from_name  = defined('MAIL_FROM_NAME')  && MAIL_FROM_NAME  ? MAIL_FROM_NAME  : 'ZOA MUSIC';
 
     $payload = [
         'from'    => "{$from_name} <{$from_email}>",
@@ -86,7 +86,7 @@ function email_enviar_resend(string $para, string $nome_para, string $assunto, s
  */
 function email_enviar_native(string $para, string $nome_para, string $assunto, string $html): bool {
     $from_email = defined('MAIL_FROM_EMAIL') && MAIL_FROM_EMAIL ? MAIL_FROM_EMAIL : 'no-reply@louvor.net';
-    $from_name  = defined('MAIL_FROM_NAME')  && MAIL_FROM_NAME  ? MAIL_FROM_NAME  : 'LOUVOR.NET';
+    $from_name  = defined('MAIL_FROM_NAME')  && MAIL_FROM_NAME  ? MAIL_FROM_NAME  : 'ZOA MUSIC';
 
     $headers  = "MIME-Version: 1.0\r\n";
     $headers .= "Content-type: text/html; charset=UTF-8\r\n";
@@ -119,7 +119,7 @@ function email_template_musica_pronta(string $nome, string $titulo, string $link
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sua música está pronta! — LOUVOR.NET</title>
+  <title>Sua música está pronta! — ZOA MUSIC</title>
 </head>
 <body style="margin:0;padding:0;background:#F5F0E8;font-family:'Helvetica Neue',Arial,sans-serif;">
 
@@ -132,7 +132,7 @@ function email_template_musica_pronta(string $nome, string $titulo, string $link
           <!-- Header dourado -->
           <tr>
             <td style="background:linear-gradient(135deg,#C9A84C 0%,#D4AF37 50%,#B8922A 100%);padding:40px 48px;text-align:center;">
-              <img src="{$base_url}/assets/logo.jpeg" width="60" height="60" style="width:60px;height:60px;border-radius:30px;border:2px solid rgba(255,255,255,0.4);margin-bottom:12px;" alt="LOUVOR.NET">
+              <img src="{$base_url}/assets/logo.svg" width="60" height="60" style="width:60px;height:60px;border-radius:30px;border:2px solid rgba(255,255,255,0.4);margin-bottom:12px;" alt="ZOA MUSIC">
               <h1 style="margin:0;font-size:28px;font-weight:700;color:#FFFFFF;letter-spacing:0.12em;font-family:Georgia,serif;">
                 LOUVOR<span style="font-style:italic;">.NET</span>
               </h1>
@@ -190,10 +190,10 @@ function email_template_musica_pronta(string $nome, string $titulo, string $link
           <!-- Footer -->
           <tr>
             <td style="background:#FDFBF5;border-top:1px solid #F0E8CC;padding:24px 48px;text-align:center;">
-              <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#1C1917;letter-spacing:0.1em;">LOUVOR.NET</p>
+              <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#1C1917;letter-spacing:0.1em;">ZOA MUSIC</p>
               <p style="margin:0;font-size:12px;color:#A08060;line-height:1.6;">
                 Você recebeu este e-mail porque solicitou a criação de uma música personalizada em louvor.net.<br>
-                © {$year} LOUVOR.NET — Todos os direitos reservados.
+                © {$year} ZOA MUSIC — Todos os direitos reservados.
               </p>
             </td>
           </tr>

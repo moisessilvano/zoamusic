@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Trocar Senha Obrigatória
+// ZOA MUSIC - Trocar Senha Obrigatória
 // ============================================================
 session_start();
 
@@ -37,9 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trocar Senha — LOUVOR.NET</title>
+    <title>Trocar Senha — ZOA MUSIC</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" type="image/jpeg" href="../assets/logo.jpeg">
+    <link rel="icon" type="image/svg+xml" href="../assets/logo.svg">
     <style>
         body { background: linear-gradient(135deg, #0F172A 0%, #1a2744 100%); font-family: 'Inter', system-ui, sans-serif; }
     </style>
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="w-full max-w-sm">
 
         <div class="text-center mb-8">
-            <img src="../assets/logo.jpeg" alt="LOUVOR.NET" class="w-16 h-16 mx-auto mb-4 rounded-full object-cover border-2 border-[#D4AF37]/30">
+            <img src="../assets/logo.svg" alt="ZOA MUSIC" class="w-16 h-16 mx-auto mb-4 rounded-full object-cover border-2 border-[#D4AF37]/30">
             <h1 class="text-2xl font-bold tracking-widest text-white">LOUVOR<span style="color:#D4AF37">.NET</span></h1>
             <p class="text-slate-400 text-sm mt-2">Atualização de Segurança</p>
         </div>

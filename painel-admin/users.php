@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Administradores
+// ZOA MUSIC - Administradores
 // ============================================================
 session_start();
 
@@ -66,7 +66,7 @@ $admins = db()->query("SELECT id, nome, email, totp_secret, created_at FROM admi
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Administradores — LOUVOR.NET</title>
+<title>Administradores — ZOA MUSIC</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
     * { font-family: 'Inter', system-ui, sans-serif; }
@@ -109,7 +109,7 @@ $admins = db()->query("SELECT id, nome, email, totp_secret, created_at FROM admi
 <aside class="sidebar w-60 flex-shrink-0 flex flex-col h-screen fixed left-0 top-0" id="sidebar">
     <div class="px-5 py-5 border-b border-white/5 flex items-center justify-between">
         <a href="../" class="flex items-center gap-2.5">
-            <img src="../assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover border border-[#D4AF37]/30">
+            <img src="../assets/logo.svg" alt="ZOA MUSIC" class="w-8 h-8 rounded-full object-cover border border-[#D4AF37]/30">
             <span class="font-bold tracking-widest text-base text-white">LOUVOR<span style="color:#D4AF37">.NET</span></span>
         </a>
         <button class="md:hidden text-slate-400 hover:text-white" onclick="closeSidebar()">

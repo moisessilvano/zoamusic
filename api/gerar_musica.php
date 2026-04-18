@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Worker: Geração de Letra + Submissão Suno
+// ZOA MUSIC - Worker: Geração de Letra + Submissão Suno
 // Responsabilidade: Claude (letra) + Suno submit (task_id).
 // NÃO faz polling — o frontend chama poll_suno.php para isso.
 // ============================================================
@@ -42,9 +42,11 @@ if (!$musica || !empty($musica['task_id'])) {
 }
 
 try {
+    $estilo = $musica['estilo'] ?? 'Pop Brasil';
+
     // ETAPA 1: Claude gera a letra
-    logger("Worker [{$uid}]: Solicitando letra ao Claude...");
-    $resultado = claude_gerar_letra($musica['inspiracao']);
+    logger("Worker [{$uid}]: Solicitando letra ao Claude (estilo: {$estilo})...");
+    $resultado = claude_gerar_letra($musica['inspiracao'], $estilo);
     $titulo = $resultado['titulo'];
     $letra  = $resultado['letra'];
     $vocal  = $resultado['vocal'] ?? 'male vocalist';
@@ -55,8 +57,8 @@ try {
 
 
     // ETAPA 2: Submete o job ao Suno (não aguarda conclusão)
-    logger("Worker [{$uid}]: Submetendo job ao Suno...");
-    $task_id = suno_gerar_audio($titulo, $letra, $vocal, $uid);
+    logger("Worker [{$uid}]: Submetendo job ao Suno (estilo: {$estilo})...");
+    $task_id = suno_gerar_audio($titulo, $letra, $vocal, $uid, $estilo);
 
     $stmt = db()->prepare('UPDATE musicas SET task_id = ? WHERE id = ?');
     $stmt->execute([$task_id, $uid]);
@@ -64,7 +66,7 @@ try {
 
 } catch (RuntimeException $e) {
     logger("Worker [{$uid}] ERRO: " . $e->getMessage());
-    error_log("LOUVOR.NET Worker [{$uid}]: " . $e->getMessage());
+    error_log("ZOA MUSIC Worker [{$uid}]: " . $e->getMessage());
     $stmt = db()->prepare("UPDATE musicas SET status = 'erro' WHERE id = ?");
     $stmt->execute([$uid]);
 }

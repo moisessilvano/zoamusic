@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Integração Asaas (PIX)
+// ZOA MUSIC - Integração Asaas (PIX)
 // ============================================================
 
 require_once __DIR__ . '/../config.php';
@@ -15,7 +15,7 @@ require_once __DIR__ . '/../config.php';
  */
 function asaas_obter_customer(string $cpf, ?string $nome = null, string $email = ''): string {
     $payload = [
-        'name'    => $nome ? trim($nome) : 'Cliente LOUVOR.NET',
+        'name'    => $nome ? trim($nome) : 'Cliente ZOA MUSIC',
         'email'   => $email ?: 'cliente@louvor.net',
         'cpfCnpj' => preg_replace('/\D/', '', $cpf),
     ];
@@ -96,7 +96,7 @@ function asaas_request(string $method, string $path, array $body = []): array {
     $headers = [
         'Content-Type: application/json',
         'access_token: ' . ASAAS_API_KEY,
-        'User-Agent: LOUVOR.NET/1.0',
+        'User-Agent: ZOA MUSIC/1.0',
     ];
 
     curl_setopt_array($ch, [

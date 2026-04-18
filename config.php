@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Configuração Central
+// ZOA MUSIC - Configuração Central
 // ============================================================
 
 // SEGURANÇA: Desativa exibição de erros em produção
@@ -57,19 +57,19 @@ define('SUNO_API_URL', env('SUNO_API_URL'));
 
 // --- Zenvia (SMS) ---
 define('ZENVIA_TOKEN', env('ZENVIA_TOKEN'));
-define('ZENVIA_FROM',  env('ZENVIA_FROM', 'LOUVORNET'));
+define('ZENVIA_FROM',  env('ZENVIA_FROM', 'ZOAMUSIC'));
 
 // --- E-mail ---
 define('RESEND_API_KEY',   env('RESEND_API_KEY', ''));
-define('MAIL_FROM_EMAIL',  env('MAIL_FROM_EMAIL', 'contato@louvor.net')); 
-define('MAIL_FROM_NAME',   env('MAIL_FROM_NAME',  'LOUVOR.NET'));
+define('MAIL_FROM_EMAIL',  env('MAIL_FROM_EMAIL', 'contato@zoamusic.com'));
+define('MAIL_FROM_NAME',   env('MAIL_FROM_NAME',  'ZOA MUSIC'));
 
 // --- App ---
 define('BASE_URL',           env('BASE_URL', 'http://localhost'));
 define('MUSICA_PRICE',       (float) env('MUSICA_PRICE', '19.90'));
-define('MUSICA_DESCRIPTION', env('MUSICA_DESCRIPTION', 'LOUVOR.NET - Música Cristã Personalizada'));
+define('MUSICA_DESCRIPTION', env('MUSICA_DESCRIPTION', 'ZOA MUSIC - Música de Zoeira Personalizada'));
 define('ASAAS_WEBHOOK_TOKEN', env('ASAAS_WEBHOOK_TOKEN', ''));
-define('INSTAGRAM_HANDLE',    env('INSTAGRAM_HANDLE', 'louvor.net'));
+define('INSTAGRAM_HANDLE',    env('INSTAGRAM_HANDLE', 'zoamusic'));
 
 // --- Google Analytics ---
 define('GTAG_ID', env('GTAG_ID', '')); // Ex: G-XXXXXXXXXX — deixe vazio para desativar
@@ -80,7 +80,7 @@ define('CF_TURNSTILE_SECRET_KEY', env('CF_TURNSTILE_SECRET_KEY', ''));
 
 // --- Trava de Segurança: Apenas IPs do Brasil no Admin ---
 $request_uri = $_SERVER['REQUEST_URI'] ?? '';
-if (str_contains($request_uri, '/portal-adoracao/')) {
+if (str_contains($request_uri, '/painel-admin/')) {
     $country = $_SERVER['HTTP_CF_IPCOUNTRY'] ?? '';
     
     // Se não for BR e não for ambiente de desenvolvimento local (vazio ou XX)

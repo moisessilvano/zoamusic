@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Admin Login c/ 2FA
+// ZOA MUSIC - Admin Login c/ 2FA
 // ============================================================
 session_start();
 require_once __DIR__ . '/../config.php';
@@ -31,7 +31,7 @@ if (!empty($_SESSION['admin_partial_id'])) {
         }
         $totp_secret = $_SESSION['totp_temp_secret'];
         $qr_name = trim($_SESSION['admin_partial_email']);
-        $qr_url = TOTP::getQRCodeUrl($qr_name, $totp_secret, 'LOUVOR.NET');
+        $qr_url = TOTP::getQRCodeUrl($qr_name, $totp_secret, 'ZOA MUSIC');
     } else {
         $step = 3; // Já tem 2FA configurado, apenas solicita código
         $totp_secret = $secret_db;
@@ -121,8 +121,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sessão Restrita — LOUVOR.NET</title>
-    <link rel="icon" type="image/jpeg" href="../assets/logo.jpeg">
+    <title>Sessão Restrita — ZOA MUSIC</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/logo.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- Logo -->
         <div class="text-center mb-8">
-            <img src="../assets/logo.jpeg" alt="LOUVOR.NET" class="w-12 h-12 mx-auto mb-3 rounded-full object-cover border-2 border-[#D4AF37]/30">
+            <img src="../assets/logo.svg" alt="ZOA MUSIC" class="w-12 h-12 mx-auto mb-3 rounded-full object-cover border-2 border-[#D4AF37]/30">
             <h1 class="text-2xl font-bold tracking-widest text-white">LOUVOR<span style="color:#D4AF37">.NET</span></h1>
             <p class="text-slate-500 text-sm mt-1">Acesso Restrito</p>
         </div>
@@ -185,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <script>
                     window.addEventListener('load', function() {
                         new QRCode(document.getElementById("qrcode"), {
-                            text: "otpauth://totp/<?= urlencode($_SESSION['admin_partial_email']) ?>?secret=<?= $totp_secret ?>&issuer=LOUVOR.NET",
+                            text: "otpauth://totp/<?= urlencode($_SESSION['admin_partial_email']) ?>?secret=<?= $totp_secret ?>&issuer=ZOA MUSIC",
                             width: 180,
                             height: 180,
                             colorDark : "#000000",

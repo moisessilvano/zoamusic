@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Checkout e PIX (Tela 2)
+// ZOA MUSIC - Checkout e PIX (Tela 2)
 // ============================================================
 
 require_once __DIR__ . '/config.php';
@@ -69,46 +69,46 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOUVOR.NET — Finalize seu Pagamento</title>
+    <title>ZOA MUSIC — Finalize seu Pagamento</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/jpeg" href="assets/logo.jpeg">
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         *, body { font-family: 'Inter', system-ui, sans-serif; }
-        .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
-        body { background: #FDFBF5; color: #1C1917; }
+        .font-display { font-family: 'Space Grotesk', system-ui, sans-serif; }
+        body { background: #080808; color: #F0F0F0; }
 
         .navbar {
-            background: rgba(255,255,255,0.9);
+            background: rgba(8,8,8,0.92);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(201,168,76,0.15);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
         .btn-gold {
-            background: linear-gradient(135deg, #C9A84C 0%, #D4AF37 50%, #B8922A 100%);
-            box-shadow: 0 4px 24px rgba(201,168,76,0.3);
+            background: linear-gradient(135deg, #FF2D78 0%, #FF6B9D 100%);
+            box-shadow: 0 4px 24px rgba(255,45,120,0.35);
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(201,168,76,0.4); }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(255,45,120,0.5); }
 
-        .card { background:#fff; border:1px solid rgba(201,168,76,0.18); box-shadow:0 2px 20px rgba(0,0,0,0.04); }
+        .card { background:#141414; border:1px solid rgba(255,255,255,0.08); box-shadow:0 2px 20px rgba(0,0,0,0.3); }
 
         .pix-code { font-family:'Courier New',monospace; word-break:break-all; font-size:0.72rem; }
 
-        @keyframes pulse-gold {
-            0%   { box-shadow: 0 0 0 0 rgba(201,168,76,0.45); }
-            70%  { box-shadow: 0 0 0 14px rgba(201,168,76,0); }
-            100% { box-shadow: 0 0 0 0 rgba(201,168,76,0); }
+        @keyframes pulse-pink {
+            0%   { box-shadow: 0 0 0 0 rgba(255,45,120,0.45); }
+            70%  { box-shadow: 0 0 0 14px rgba(255,45,120,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,45,120,0); }
         }
-        .pulse-gold { animation: pulse-gold 2s infinite; }
+        .pulse-gold { animation: pulse-pink 2s infinite; }
 
         /* Steps */
-        .step-done   { background:#C9A84C; color:#fff; }
-        .step-active { background:#fff; color:#1C1917; border:2px solid #C9A84C; }
-        .step-pending { background:#F0E8CC; color:#B8A07A; }
-        .step-line-done   { background:#C9A84C; }
-        .step-line-pending { background:#E8D9A8; }
+        .step-done   { background:#FF2D78; color:#fff; }
+        .step-active { background:#1E1E1E; color:#F0F0F0; border:2px solid #FF2D78; }
+        .step-pending { background:#1A1A1A; color:#555; }
+        .step-line-done   { background:#FF2D78; }
+        .step-line-pending { background:#222; }
     </style>
     <?php require_once __DIR__ . '/includes/gtag.php'; ?>
     <script>
@@ -128,14 +128,14 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
 
 <!-- NAVBAR -->
 <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center gap-3">
-    <img src="assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover border border-[#C9A84C]/30">
-    <a href="/" class="text-xl font-bold tracking-widest" style="color:#1C1917; letter-spacing:.12em">
-        LOUVOR<span style="color:#C9A84C">.NET</span>
+    <img src="assets/logo.svg" alt="ZOA MUSIC" class="w-8 h-8 rounded-full">
+    <a href="/" class="font-display text-xl font-bold tracking-tight">
+        ZOA<span style="color:#FF2D78"> MUSIC</span>
     </a>
 </nav>
 
 <!-- STEPS -->
-<div class="pt-20 pb-6 px-6" style="background:#FDFBF5; border-bottom:1px solid rgba(201,168,76,0.12);">
+<div class="pt-20 pb-6 px-6" style="background:#0D0D0D; border-bottom:1px solid rgba(255,255,255,0.06);">
     <div class="max-w-lg mx-auto flex items-center justify-center">
         <?php foreach ([['1','Inspiração','done'],['2','Pagamento','active'],['3','Criação','pending'],['4','Ouvir','pending']] as $i => [$num,$label,$state]): ?>
             <?php if ($i > 0): ?>
@@ -159,16 +159,16 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
     <!-- HEADER -->
     <div class="text-center mb-8">
         <div class="text-5xl mb-4">🎵</div>
-        <h1 class="font-display text-4xl font-bold mb-2" style="color:#1C1917;">
-            Sua música está <span style="background:linear-gradient(135deg,#B8922A,#D4AF37,#E8CC80);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">quase pronta!</span>
+        <h1 class="font-display text-4xl font-bold mb-2" style="color:#F0F0F0;">
+            Sua zoeira está <span style="background:linear-gradient(135deg,#FF2D78,#FF6B9D,#FFD60A);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">quase pronta!</span>
         </h1>
-        <p class="text-sm" style="color:#6B5B3E;">Conclua o pagamento para iniciar a composição.</p>
+        <p class="text-sm" style="color:#888;">Conclua o pagamento para a IA começar a compor.</p>
     </div>
 
     <!-- INSPIRAÇÃO -->
-    <div class="rounded-2xl p-5 mb-6" style="background:#FBF6E9; border:1px solid #E8D9A8;">
-        <p class="text-xs font-bold tracking-widest uppercase mb-2" style="color:#C9A84C;">Sua inspiração</p>
-        <p class="text-sm italic" style="color:#44403C;">"<?= htmlspecialchars($inspiracao_preview) ?>"</p>
+    <div class="rounded-2xl p-5 mb-6" style="background:rgba(255,45,120,0.07); border:1px solid rgba(255,45,120,0.2);">
+        <p class="text-xs font-bold tracking-widest uppercase mb-2" style="color:#FF2D78;">A história da zoeira</p>
+        <p class="text-sm italic" style="color:#aaa;">"<?= htmlspecialchars($inspiracao_preview) ?>"</p>
     </div>
 
     <?php if (ASAAS_ENV === 'sandbox'): ?>
@@ -186,8 +186,8 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
     <!-- VALOR -->
     <div class="card rounded-2xl px-6 py-4 mb-5 flex items-center justify-between">
         <div>
-            <p class="text-xs" style="color:#8B7355;">Música Cristã Personalizada</p>
-            <p class="font-semibold text-sm" style="color:#1C1917;">1x Composição com IA</p>
+            <p class="text-xs" style="color:#666;">Música de Zoeira Personalizada</p>
+            <p class="font-semibold text-sm" style="color:#F0F0F0;">1x Composição com IA</p>
         </div>
         <div class="text-right">
             <p class="font-display text-3xl font-bold" style="color:#1C1917;">
@@ -331,8 +331,8 @@ $inspiracao_preview = mb_strimwidth($musica['inspiracao'], 0, 120, '...');
             }, 5000); // 5 segundos
         </script>
     <?php endif; ?>
-    <p class="text-center text-xs mt-4" style="color:#B8A07A;">
-        Após confirmar, a LOUVOR.NET irá compor sua música exclusiva em minutos.
+    <p class="text-center text-xs mt-4" style="color:#555;">
+        Após confirmar, o ZOA MUSIC irá compor sua música exclusiva em minutos. 🤣
     </p>
 </div>
 

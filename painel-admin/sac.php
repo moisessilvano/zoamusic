@@ -28,7 +28,7 @@ $mensagens = db()->query("SELECT * FROM sac_mensagens ORDER BY created_at DESC")
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mensagens SAC — LOUVOR.NET</title>
+<title>Mensagens SAC — ZOA MUSIC</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
     body { background: #0F172A; color: #F1F5F9; font-family: 'Inter', sans-serif; }

@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Player Final (Tela 4)
+// ZOA MUSIC - Player Final (Tela 4)
 // ============================================================
 
 require_once __DIR__ . '/config.php';
@@ -50,13 +50,13 @@ function formatar_letra(string $letra): string {
             $secao_exibicao = $map[ucfirst(strtolower($secao))] ?? $secao;
 
             $html .= '<div class="mb-8">';
-            $html .= '<p class="text-xs font-bold tracking-widest uppercase mb-3" style="color:#C9A84C">' . htmlspecialchars($secao_exibicao) . '</p>';
+            $html .= '<p class="text-xs font-bold tracking-widest uppercase mb-3" style="color:#FF2D78">' . htmlspecialchars($secao_exibicao) . '</p>';
             if ($conteudo) {
-                $html .= '<p class="leading-relaxed text-lg font-display italic" style="color:#44403C">' . nl2br(htmlspecialchars($conteudo)) . '</p>';
+                $html .= '<p class="leading-relaxed text-lg italic" style="color:#aaa">' . nl2br(htmlspecialchars($conteudo)) . '</p>';
             }
             $html .= '</div>';
         } else {
-            $html .= '<p class="leading-relaxed text-lg font-display italic mb-6" style="color:#44403C">'
+            $html .= '<p class="leading-relaxed text-lg italic mb-6" style="color:#aaa">'
                    . nl2br(htmlspecialchars($bloco)) . '</p>';
         }
     }
@@ -72,7 +72,7 @@ if (!empty($musica['short_code'])) {
     $share_url = shortlink_url($code);
 }
 
-$whatsapp_msg = urlencode('🎵 Ouça a música cristã que a LOUVOR.NET criou pra mim: ' . $share_url);
+$whatsapp_msg = urlencode('🤣 A IA criou uma música especial pra te zuar! Ouça agora no ZOA MUSIC: ' . $share_url);
 $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
 ?>
 <!DOCTYPE html>
@@ -80,15 +80,15 @@ $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $titulo_safe ?> — LOUVOR.NET</title>
-    <meta property="og:title"       content="<?= $titulo_safe ?> | LOUVOR.NET">
-    <meta property="og:description" content="Uma música cristã criada por IA especialmente para mim.">
+    <title><?= $titulo_safe ?> — ZOA MUSIC</title>
+    <meta property="og:title"       content="<?= $titulo_safe ?> | ZOA MUSIC">
+    <meta property="og:description" content="Uma música de zoeira criada por IA especialmente para te humilhar. 🤣">
     <meta property="og:url"         content="<?= htmlspecialchars($share_url) ?>">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/jpeg" href="assets/logo.jpeg">
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         *, body { font-family: 'Inter', system-ui, sans-serif; }
@@ -96,32 +96,32 @@ $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
 
         body {
             background:
-                radial-gradient(ellipse 90% 40% at 50% 0%, rgba(201,168,76,0.1) 0%, transparent 60%),
-                #FDFBF5;
-            color: #1C1917;
+                radial-gradient(ellipse 80% 40% at 50% 0%, rgba(255,45,120,0.1) 0%, transparent 60%),
+                #080808;
+            color: #F0F0F0;
         }
 
         .navbar {
-            background: rgba(255,255,255,0.9);
+            background: rgba(8,8,8,0.9);
             backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(201,168,76,0.15);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
 
         .gold-text {
-            background: linear-gradient(135deg,#B8922A,#D4AF37,#E8CC80);
+            background: linear-gradient(135deg,#FF2D78,#FF6B9D,#FFD60A);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .btn-gold {
-            background: linear-gradient(135deg,#C9A84C,#D4AF37,#B8922A);
-            box-shadow: 0 4px 20px rgba(201,168,76,0.3);
+            background: linear-gradient(135deg,#FF2D78,#FF6B9D);
+            box-shadow: 0 4px 20px rgba(255,45,120,0.3);
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(201,168,76,0.4); }
+        .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(255,45,120,0.45); }
 
-        .card { background:#fff; border:1px solid rgba(201,168,76,0.18); box-shadow:0 4px 24px rgba(0,0,0,0.05); }
+        .card { background:#141414; border:1px solid rgba(255,255,255,0.08); box-shadow:0 4px 24px rgba(0,0,0,0.3); }
 
         /* Player personalizado */
         audio { width:100%; border-radius:12px; }
@@ -154,24 +154,24 @@ $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
 <!-- NAVBAR -->
 <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between">
     <a href="/" class="flex items-center gap-2.5">
-        <img src="assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover border border-[#C9A84C]/30">
-        <span class="text-xl font-bold tracking-widest" style="color:#1C1917; letter-spacing:.12em">
-            LOUVOR<span style="color:#C9A84C">.NET</span>
+        <img src="assets/logo.svg" alt="ZOA MUSIC" class="w-8 h-8 rounded-full">
+        <span class="font-bold text-xl tracking-tight">
+            ZOA<span style="color:#FF2D78"> MUSIC</span>
         </span>
     </a>
-    <span class="hidden md:block font-display italic text-sm" style="color:#B8A07A;">"Cantai ao Senhor um cântico novo"</span>
+    <span class="hidden md:block italic text-sm" style="color:#555;">"A vingança mais criativa tem melodia" 😂</span>
 </nav>
 
 <!-- HERO DA MÚSICA -->
 <section class="pt-32 pb-16 px-6 text-center relative overflow-hidden">
     <div class="absolute inset-0" style="background:radial-gradient(ellipse 70% 60% at 50% 0%,rgba(201,168,76,0.1) 0%,transparent 70%); pointer-events:none;"></div>
     <div class="relative z-10 max-w-2xl mx-auto">
-        <p class="text-xs font-bold tracking-widest uppercase mb-3" style="color:#C9A84C;">✦ Composição Exclusiva</p>
+        <p class="text-xs font-bold tracking-widest uppercase mb-3" style="color:#FF2D78;">🤣 Zoeira Exclusiva</p>
         <h1 class="font-display text-5xl md:text-6xl font-bold mb-4" style="color:#1C1917;">
             <?= $titulo_safe ?>
         </h1>
-        <p class="text-sm" style="color:#8B7355;">
-            Criado em <?= date('d/m/Y', strtotime($musica['created_at'])) ?> · Música única por LOUVOR.NET
+        <p class="text-sm" style="color:#666;">
+            Criado em <?= date('d/m/Y', strtotime($musica['created_at'])) ?> · Zoeira única por ZOA MUSIC 🎤
         </p>
     </div>
 </section>
@@ -187,8 +187,8 @@ $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
                 <?php endfor; ?>
             </div>
             <div class="flex-1 min-w-0">
-                <p class="font-semibold truncate" style="color:#1C1917;"><?= $titulo_safe ?></p>
-                <p class="text-xs" style="color:#8B7355;">LOUVOR.NET · Composição por IA</p>
+                <p class="font-semibold truncate" style="color:#F0F0F0;"><?= $titulo_safe ?></p>
+                <p class="text-xs" style="color:#666;">ZOA MUSIC · Composição por IA</p>
             </div>
             <span class="text-2xl">🎵</span>
         </div>
@@ -198,14 +198,14 @@ $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
     </div>
 
     <!-- AÇÕES -->
-    <div class="grid grid-cols-2 gap-4 mb-8">
+    <div class="grid grid-cols-2 gap-4 mb-8" style="color:#F0F0F0;">
         <?php 
-            $filename = preg_replace('/[^a-z0-9]+/', '-', strtolower($musica['titulo'] ?? 'musica')) . '-louvor-net.mp3';
+            $filename = preg_replace('/[^a-z0-9]+/', '-', strtolower($musica['titulo'] ?? 'musica')) . '-zoa-music.mp3';
         ?>
         <a href="<?= htmlspecialchars($musica['audio_url']) ?>"
            download="<?= $filename ?>"
            class="flex items-center justify-center gap-2 py-4 rounded-2xl font-semibold text-sm transition-all"
-           style="background:#fff; border:1.5px solid #E8D9A8; color:#44403C;">
+           style="background:#1A1A1A; border:1.5px solid rgba(255,255,255,0.1); color:#aaa;">
             ⬇ Baixar MP3
         </a>
         <a href="https://api.whatsapp.com/send?text=<?= $whatsapp_msg ?>" target="_blank"
@@ -221,20 +221,20 @@ $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
 
     <!-- LETRA -->
     <div class="card rounded-3xl p-8 mb-8">
-        <div class="flex items-center gap-3 mb-6 pb-4" style="border-bottom:1px solid #F0E8CC;">
+        <div class="flex items-center gap-3 mb-6 pb-4" style="border-bottom:1px solid rgba(255,255,255,0.06);">
             <span class="text-2xl">📜</span>
-            <h2 class="font-semibold text-lg" style="color:#1C1917;">Letra da Música</h2>
+            <h2 class="font-semibold text-lg" style="color:#F0F0F0;">Letra da Música</h2>
         </div>
         <?= formatar_letra($musica['letra'] ?? '') ?>
     </div>
 
     <!-- COMPARTILHAR LINK -->
-    <div class="rounded-2xl p-5 mb-10" style="background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.25);">
-        <p class="text-xs font-bold mb-2" style="color:#C9A84C;">🔗 Link para compartilhar</p>
+    <div class="rounded-2xl p-5 mb-10" style="background:rgba(255,45,120,0.07); border:1px solid rgba(255,45,120,0.2);">
+        <p class="text-xs font-bold mb-2" style="color:#FF2D78;">🔗 Manda pra ele(a) agora</p>
         <div class="flex gap-2">
             <input type="text" id="share-url" readonly value="<?= htmlspecialchars($share_url) ?>"
                 class="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none"
-                style="background:#fff; border:1px solid #E8D9A8; color:#44403C;">
+                style="background:#1E1E1E; border:1px solid rgba(255,255,255,0.1); color:#aaa;">
             <button onclick="copiarLink(event)"
                 class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white btn-gold">
                 Copiar
@@ -244,22 +244,22 @@ $titulo_safe  = htmlspecialchars($musica['titulo'] ?? 'Minha Música');
 
     <!-- CTA nova música -->
     <div class="text-center">
-        <p class="text-sm mb-4" style="color:#8B7355;">Gostou? Crie uma nova música para alguém especial!</p>
+        <p class="text-sm mb-4" style="color:#666;">Mais alguém merece uma música especial? 😈</p>
         <a href="/" class="btn-gold inline-block px-8 py-4 rounded-2xl text-white font-bold text-lg">
-            🎵 Criar Nova Música
+            🤣 Zoar Mais Alguém
         </a>
     </div>
 </div>
 
 <!-- FOOTER -->
-<footer class="px-6 py-8 text-center" style="background:#fff; border-top:1px solid rgba(201,168,76,0.12);">
-    <p class="font-display italic text-sm mb-4" style="color:#B8A07A;">"Tudo que tem fôlego louve ao Senhor." — Salmos 150:6</p>
-    <div class="flex items-center justify-center gap-6 text-xs mb-4" style="color:#B8A07A;">
-        <a href="termos.php" class="hover:text-[#C9A84C] transition-colors">Termos de Uso</a>
+<footer class="px-6 py-8 text-center" style="background:#0A0A0A; border-top:1px solid rgba(255,255,255,0.06);">
+    <p class="italic text-sm mb-4" style="color:#444;">"A vingança mais criativa tem melodia." 😂</p>
+    <div class="flex items-center justify-center gap-6 text-xs mb-4" style="color:#444;">
+        <a href="termos.php" class="hover:text-white transition-colors">Termos de Uso</a>
         <span>·</span>
-        <a href="privacidade.php" class="hover:text-[#C9A84C] transition-colors">Privacidade</a>
+        <a href="privacidade.php" class="hover:text-white transition-colors">Privacidade</a>
     </div>
-    <p class="text-xs" style="color:#C8B99A;">© <?= date('Y') ?> LOUVOR.NET</p>
+    <p class="text-xs" style="color:#333;">© <?= date('Y') ?> ZOA MUSIC</p>
 </footer>
 
 <script>
@@ -298,11 +298,11 @@ try {
     const uid   = <?= json_encode($uid) ?>;
     const titulo = <?= json_encode($musica['titulo'] ?? 'Minha Música') ?>;
     const data   = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
-    let hist = JSON.parse(localStorage.getItem('louvor_historico') || '[]');
-    hist = hist.filter(m => m.uid !== uid); // remove duplicata
+    let hist = JSON.parse(localStorage.getItem('zoamusic_historico') || '[]');
+    hist = hist.filter(m => m.uid !== uid);
     hist.push({ uid, titulo, data });
-    if (hist.length > 20) hist = hist.slice(-20); // máx 20
-    localStorage.setItem('louvor_historico', JSON.stringify(hist));
+    if (hist.length > 20) hist = hist.slice(-20);
+    localStorage.setItem('zoamusic_historico', JSON.stringify(hist));
 } catch(e) {}
 
 // Para e esconde o mini-player (usuário ouve a própria música aqui)
@@ -311,7 +311,7 @@ try {
     if (mp) { mp.pause(); mp.src = ''; }
     const mpEl = document.getElementById('mini-player');
     if (mpEl) mpEl.style.display = 'none';
-    sessionStorage.removeItem('louvor_mini_player');
+    sessionStorage.removeItem('zoamusic_mini_player');
 } catch(e) {}
 </script>
 </body>

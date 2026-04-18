@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Painel Administrativo (Renovado)
+// ZOA MUSIC - Painel Administrativo (Renovado)
 // ============================================================
 session_start();
 
@@ -135,8 +135,8 @@ function fmt_brl(float $val): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — LOUVOR.NET</title>
-<link rel="icon" type="image/jpeg" href="../assets/logo.jpeg">
+<title>Admin — ZOA MUSIC</title>
+<link rel="icon" type="image/svg+xml" href="../assets/logo.svg">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
     * { font-family: 'Inter', system-ui, sans-serif; }
@@ -199,7 +199,7 @@ function fmt_brl(float $val): string {
 <aside class="sidebar w-60 flex-shrink-0 flex flex-col h-screen fixed left-0 top-0" id="sidebar">
     <div class="px-5 py-5 border-b border-white/5 flex items-center justify-between">
         <a href="../" class="flex items-center gap-2.5">
-            <img src="../assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover border border-[#D4AF37]/30">
+            <img src="../assets/logo.svg" alt="ZOA MUSIC" class="w-8 h-8 rounded-full object-cover border border-[#D4AF37]/30">
             <span class="font-bold tracking-widest text-base text-white">LOUVOR<span style="color:#D4AF37">.NET</span></span>
         </a>
         <button class="md:hidden text-slate-400 hover:text-white" onclick="closeSidebar()">
@@ -489,7 +489,7 @@ function fmt_brl(float $val): string {
 
         <!-- Rodapé admin -->
         <p class="text-center text-xs text-slate-500 pb-4">
-            LOUVOR.NET Admin • Total faturado: <strong style="color:#C9A84C"><?= fmt_brl($stats['concluidas'] * $preco) ?></strong>
+            ZOA MUSIC Admin • Total faturado: <strong style="color:#C9A84C"><?= fmt_brl($stats['concluidas'] * $preco) ?></strong>
         </p>
     </div>
 </div>

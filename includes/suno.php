@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// LOUVOR.NET - Integração SunoAPI.org (Interface Estável)
+// ZOA MUSIC - Integração SunoAPI.org (Interface Estável)
 // ============================================================
 
 require_once __DIR__ . '/../config.php';
@@ -8,9 +8,32 @@ require_once __DIR__ . '/../config.php';
 /**
  * Dispara a geração de áudio na SunoAPI.org.
  */
-function suno_gerar_audio(string $titulo, string $letra, string $vocal_type = 'male vocalist', ?string $uid = null): string {
+function suno_estilo_para_style(string $estilo): string {
+    $mapa = [
+        'funk'       => 'Brazilian Funk Carioca, Baile Funk, Bass Heavy, 150 BPM, MC vocals, Electronic, Party, Favela',
+        'sertanejo'  => 'Brazilian Sertanejo Universitario, Acoustic Guitar, Duo Vocals, Country Pop, Romantic, Heartfelt',
+        'mpb'        => 'MPB, Música Popular Brasileira, Acoustic Guitar, Soulful, Bossa Nova, Sophisticated, Poetic',
+        'forro'      => 'Forró, Brazilian Nordestino, Accordion, Zabumba, Triangle, Festive, Northeast Brazil',
+        'pagode'     => 'Pagode Brasileiro, Cavaquinho, Pandeiro, Samba, Romantic, Upbeat, Rio de Janeiro',
+        'trap'       => 'Brazilian Trap, Trap Beat, 808 Bass, Melodic vocals, Hip Hop BR, Urban, Street',
+        'pisadinha'  => 'Forró Pisadinha, High BPM, Electronic Bass, Dance, Northeast Brazil, Energetic',
+        'rock'       => 'Brazilian Rock, Rock Nacional, Electric Guitar, Drums, Guitar Riff, Distortion',
+        'axe'        => 'Axé, Baiano Music, Upbeat, Percussion, Carnival, Salvador Bahia, Festive',
+        'pop'        => 'Brazilian Pop, Contemporary, Synth, Radio-friendly, Young, Commercial',
+    ];
+
+    $estiloLower = strtolower($estilo);
+    foreach ($mapa as $key => $style) {
+        if (str_contains($estiloLower, $key)) {
+            return $style;
+        }
+    }
+    return 'Brazilian Pop, Contemporary, Fun, Upbeat, Radio-friendly';
+}
+
+function suno_gerar_audio(string $titulo, string $letra, string $vocal_type = 'male vocalist', ?string $uid = null, string $estilo = 'Pop Brasil'): string {
     $vocal = str_contains(strtolower($vocal_type), 'female') ? 'f' : 'm';
-    $style = "Brazilian Gospel, Contemporary Christian Music, Worship, Soulful, Powerful, Piano, Acoustic Guitar, Studio Quality, Radio-ready";
+    $style = suno_estilo_para_style($estilo);
 
     $payload = [
         'customMode'   => true,

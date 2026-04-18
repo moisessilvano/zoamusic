@@ -6,10 +6,10 @@ require_once __DIR__ . '/config.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Política de Privacidade — LOUVOR.NET</title>
+    <title>Política de Privacidade — ZOA MUSIC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/jpeg" href="assets/logo.jpeg">
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
     <style>
         body { font-family: 'Inter', sans-serif; background: #FDFBF5; color: #1C1917; }
         .font-display { font-family: 'Cormorant Garamond', serif; }
@@ -20,7 +20,7 @@ require_once __DIR__ . '/config.php';
     <div class="max-w-3xl mx-auto bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-[#E8D9A8]">
         <div class="mb-10 text-center">
             <a href="/" class="inline-flex items-center gap-2 mb-6">
-                <img src="assets/logo.jpeg" alt="LOUVOR.NET" class="w-8 h-8 rounded-full object-cover">
+                <img src="assets/logo.svg" alt="ZOA MUSIC" class="w-8 h-8 rounded-full object-cover">
                 <span class="text-xl font-bold tracking-widest">LOUVOR<span class="text-[#C9A84C]">.NET</span></span>
             </a>
             <h1 class="font-display text-4xl font-bold">Política de Privacidade</h1>

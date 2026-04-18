@@ -1,6 +1,6 @@
 <?php
 /**
- * LOUVOR.NET — Mini-player flutuante persistente
+ * ZOA MUSIC — Mini-player flutuante persistente
  * Include este arquivo antes do </body> em todas as páginas
  * exceto ouvir.php (onde o usuário ouve a própria música).
  *
@@ -36,7 +36,7 @@
         <div style="flex:1; min-width:0;">
             <p style="font-size:11px; font-weight:600; color:#1C1917; margin:0;
                       white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="mp-title">
-                LOUVOR.NET
+                ZOA MUSIC
             </p>
             <p style="font-size:10px; color:#A08060; margin:0;">Música de fundo</p>
         </div>
